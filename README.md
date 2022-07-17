@@ -1,10 +1,9 @@
-# GitHub Management via Terraform: Template
+## CryptoEcon for Retrieval
 
-This repository is meant to serve as a template for creating new repositories responsible for managing GitHub configuration as code with Terraform. It provides an opinionated way to manage GitHub configuration without following the Terraform usage guidelines to the letter. It was designed with managing multiple, medium to large sized GitHub organisations in mind and that is exactly what it is/is going to be optimised for.
+This folder brings together all the CEL analysis and projects related to retrieval market initiatives.
 
-**IMPORTANT**: Having write access to GitHub Management repository can be as powerful as having admin access to the organizations managed by that repository.
+### Current projects
 
-To learn more, check out:
-- [What is GitHub Management and how does it work?](docs/ABOUT.md)
-- [How to set up GitHub Management?](docs/SETUP.md)
-- [How to work with GitHub Management?](docs/HOWTOS.md)
+Saturn aliens:
+- [GitHub issues](https://github.com/protocol/CryptoEconLab-private/milestone/10)
+- [Project proposal](https://docs.google.com/document/d/1UVUCpiECBYK2sxv8vQjOxyLk541uXli27e1Y7_K5Ax8/edit?usp=sharing)
