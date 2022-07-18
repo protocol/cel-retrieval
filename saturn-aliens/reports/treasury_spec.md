@@ -47,20 +47,19 @@ In the next sections, we will describe in more detail the behaviors we want to i
 
 ## Behaviors and incentives
 
-:::warning
-:warning: still need to align on whether we care more about some behaviors over the others and whether we are missing something
-:::
 
-Behaviors we want to incentivize:
-* High bandwidth
-* Fast retrievals
-* Network growth
-* Reliability
+At a high level, we wish to incentivise the following behvaiors:
 
+* Performance, namely time-to-first-byte (TTFB) and upload speed.
+* Reliability, i.e. nodes should be online and responsive to requests
+* Conformation to Saturn's design. Examples include L1s cache missing to L2s and L2s cache missing to SPs.
+* Geographical coverage. We want retrievals to be available across to globe.
 
-Behaviors we want to avoid:
+On the other hand, the behaviors we want to avoid mostly revolve around abuse and fraud. Examples include:
+
 * Doctored logs - creating logs of retrievals that didn't happen or changing real logs to improve some variables such as the bytes sent and the request duration.
 * Fake retrievals - retrievals made by operators or other actors that do not correspond to real and lawful clients of the network.
+* Retreivals returning the wrong content
 
 
 ## Fraud detection module
@@ -142,6 +141,103 @@ Finally, the station-level flags reported by the fraud detection system are join
 :::info
 :hammer: **TBD:** waiting for alignment on behaviors and incentives
 :::
+
+### Performance
+
+for performance, the two metrics that dominate all others are:
+
+  - time to first byte (TTFB)
+  - download speed, as seen by the user
+
+TTFB is how quickly the first requested byte arrives at the client. and
+download speed is how quickly the client downloads all of the requested
+content. with this two metrics we know
+
+  - how quickly the l1 responded, and
+  - how long it took that l1 to fulfill the request
+
+note that download speed is often limited on the client's end. eg an l1
+may often be able to upload content to a client at 100Mbps but the node
+may be on a cellular connection and is only able to download content at
+20Mbps
+
+relevant data we have right now for v0:
+
+  - l1 bandwidth transfer logs
+
+relevant data we want/need for v0:
+
+  - performance and transfer data as reported from the client. what's
+    needed here: saturn's service worker to be installed in website that
+    request files. why it's needed: without this data we can't reliably
+    determine the ttfb from the client's side
+
+there are other metrics that drive performance, like cache hit
+ratio. but my gut says we should leave these out of the incentive
+calculation and focus on what *actually* matters to end users: ttfb. the
+higher the cache hit ratio, the better the ttfb will be. so just let
+ttfb drive that performance incentive
+
+
+
+### Reliability
+
+nodes leaving the network degrade the network performance and experience
+for users. for example, when a node goes down, it can take up to 60s for
+that node to be detected as down and removed from the network. client
+with saturn's service worker can recover gracefully, albeit with
+degraded performance. dumb clients without arc's service worker can't,
+and their requests will fail
+
+as such, we want to introduce a mechanism for nodes to gracefully tell
+the network they will be going offline. this can be penalized slightly
+
+but if a node goes offline offline, without warning, we need to penalize
+this heavily
+
+relevant data we have right now for v0:
+
+  - uptime data, as recorded by the orchestrator. this is trusted data
+  - transfer logs as submitted by the l1. this is untrusted data
+
+relevant data we want/need for v1:
+
+  - clients reporting errors. errors include:
+    - non-2xx http status codes, aka failure status codes
+    - network timeouts
+    - incorrect data being returned. eg cat.png was requested but
+      dog.png was returned
+    - transfer in progress interrupted, stopped, or degraded 
+
+
+
+### Adherence to saturn's design
+
+this is tricky and beyond the scope of v0. i dont think its worth
+addressing this in v0 at all
+
+
+
+### Avoid abuse and fraud
+
+these are the l1 attack vectors for v0 that come to mind, ie what they
+can lie about for personal benefit:
+
+  - l1s lying about their performance, eg how long requests took to
+    finish. this improves their purported upload speed
+
+  - their uptime and status, eg responding to health checks from the
+    orchestrator while in actuality being offline or in a state of
+    degraded performance to real users
+
+  - number of requests they served. eg they can lie and said they
+    satisfied 1,000 requests when they actually only responded to 1
+
+  - lie about the amount of bandwidth served. eg they sent 100B to a
+    client but lie and say they sent 100 exabytes
+
+in short, they can lie in any field they submit to the logs. never trust
+the client (in this case, the l1)
 
 
 
