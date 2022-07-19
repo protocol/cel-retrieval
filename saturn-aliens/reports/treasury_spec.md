@@ -26,7 +26,7 @@ The diagram below illustrates the structure of the Treasure service:
 
 
 <div style="text-align:center">
-<img width="490" src="https://i.imgur.com/4ftMJVs.png">
+<img width="490" src="https://github.com/protocol/cel-retrieval/blob/1-first-pipeline-draft/saturn-aliens/reports/images/treasury_diag.drawio.png">
 <br>
 <br>
 </div>
