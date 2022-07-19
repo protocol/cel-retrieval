@@ -32,15 +32,15 @@ The diagram below illustrates the structure of the Treasure service:
 </div>
 
 
-The Treasury receives data from the [logs service](https://www.notion.so/pl-strflt/Logs-service-d52cb0fd0bff4c3392fc765720d10b81) and begins by processing it in the fraud detection module. The fraud detection module is responsible for flagging the logs and operators that look suspicious and sending these flagged entities to the metrics aggregator module.
+The Treasury receives data from the [logs service](https://www.notion.so/pl-strflt/Logs-service-d52cb0fd0bff4c3392fc765720d10b81) and begins by processing it in the fraud detection module. The fraud detection module is responsible for flagging the logs and operators that look suspicious and sending these flagged entities to the reward distribution module.
 
 The approach for the fraud detection module will be to start with simple detection techniques (e.g. heuristics and simple anomaly detection). Then, as we collect more data from Saturn and gain experience from real users, we will iterate and improve the detection model.
 
 Then, the metric aggregator combines the flags produced by the detection module with the raw logs and computes the metrics used to feed the reward calculator. The main output of this module is a table of metrics for each Station Operator, such as the total number of requests, total bandwidth, average request duration, station penalties for bad behavior, and so on.
 
-Next, the reward calculator is the part responsible for processing the Station aggregated metrics and computing how much FIL each Station Operator will receive. This is the part of the Treasury that will define the main incentives for Station Operators and guarantee that operators are aligned with the long-term vision and goals for Saturn.
+Next, the reward calculator is the part responsible for processing transfer logs and computing how much FIL each Station Operator will receive. This is the part of the Treasury that will define the main incentives for Station Operators and guarantee that operators are aligned with the long-term vision and goals for Saturn.
 
-Finally, underlying all the components, we have the monitoring module. Because Saturn will function in an agile/iterative setting, we need to be able to monitor the entire payment process to improve both the fraud detection module and the reward calculator. We need to store the station aggregated metrics, the flagged entities, and the payouts to Station Operators.
+Finally, underlying all the components, we have the monitoring module. Because Saturn will function in an agile/iterative setting, we need to be able to monitor the entire payment process to improve both the fraud detection module and the reward calculator. We need to store the the flagged entities and the payouts to Station Operators.
 
 In the next sections, we will describe in more detail the behaviors we want to incentivize/penalize and how each module contributes to this goal.
 
@@ -177,26 +177,6 @@ Most likely, we will need to use a mixture of the two strategies, where we start
 
 :::info
 :hammer: This section will be developed after the first draft is completed.
-:::
-
-
-## Metric aggregator module
-
-As the name suggests, this module receives data from the Saturn services and computes some aggregations for each Station Operator, which are later used by reward calculator.
-
-The module starts from the two sources of data - the transfer logs submitted by Station Operators and the uptime data recorded by Saturn's orchestrator. Note that while the data coming from the orchestrator can be trusted, the transfer logs may be tampered with by Station Operators. Thus, the aggregator uses the outputs from the fraud detection module to filter all transfer logs with a request-level flag. Afterward, the legit logs are aggregated by Station Operator and some metrics are computed, namely:
-
-* Epoch
-* Node ID
-* Total number of requests
-* Average download speed
-* Total amount of bytes transferred
-* Average request duration
-
-Finally, the station-level flags reported by the fraud detection system are joined with the previous metrics, resulting in a new column for each station-level heuristic. This final table that contains the flags and the aggregated metrics for each Station is the outputs of the metric aggregator module.
-
-:::warning
-:warning: This list of metrics is likely to change as we design the reward calculator module
 :::
 
 ## Reward calculator 
