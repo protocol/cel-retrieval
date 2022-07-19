@@ -26,7 +26,7 @@ The diagram below illustrates the structure of the Treasure service:
 
 
 <div style="text-align:center">
-<img width="490" src="./images/treasury_diag.drawio.png">
+<img width="400" src="https://i.imgur.com/WJehybq.png">
 <br>
 <br>
 </div>
