@@ -186,6 +186,10 @@ The reward calculator is the module responsible to computing the payouts to Satu
 3. Incent honesty -> Operators should be incentivized to report their own faults
 4. Preference towards free market -> we try to leverage free market mechanics and supply-demand to avoid having to set a price for content delivery. Price setting on new services is a hard problem and letting the market decide on the market is a good design when we have price uncertainty.
 
+:::warning
+:warning: Open question: do we want to incent actual service or offered service? E.g., do we want to reward the actual bandwidth delivered (which depends on the clients and other external factors) or do we want to reward the bandwidth the Operator is capable of providing?
+:::
+
 :::info
 :hammer: This is a very rough draft, and it is still WIP. 
 :::
