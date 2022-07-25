@@ -14,7 +14,7 @@
 
 ## Overview
 
-The Treasury is Saturn's service responsible for processing the transfer logs submitted by node operators and distributing the rewards accordingly. 
+The Treasury is Saturn's service responsible for processing the transfer logs submitted by node operators (and, in the future, clients) and distributing the rewards accordingly. 
 
 When a client requests a piece of content from Saturn's network, Saturn does not collect data from the client. Instead, Saturn takes the log of the retrieval directly from the Station Operator that served the request.
 
@@ -171,8 +171,6 @@ Most likely, we will need to use a mixture of the two strategies, where we start
 :hammer: More details about the process and the final thresholds will be shared in a dedicated report -> Still **WIP**
 :::
 
-
-
 ### Anomaly detection and ML 
 
 :::info
@@ -181,24 +179,41 @@ Most likely, we will need to use a mixture of the two strategies, where we start
 
 ## Reward calculator 
 
+The reward calculator is the module responsible to computing the payouts to Saturn Operators. Before detailing any formulas, there are some principles we used to design the module:
+
+1. Simplicity over complexity -> we only add complexity if it serves a purpose and, thus, we try to build the simplest process that achieves the goal.
+2. Bounded rewards -> since we are still in a testing phase, we should limit the daily rewards to avoid overspending in case of DDoS attacks and other anomalous behavior
+3. Incent honesty -> Operators should be incentivized to report their own faults
+4. Preference towards free market -> we try to leverage free market mechanics and supply-demand to avoid having to set a price for content delivery. Price setting on new services is a hard problem and letting the market decide on the market is a good design when we have price uncertainty.
+
 :::info
 :hammer: This is a very rough draft, and it is still WIP. 
 :::
 
-so we could do something like two superlinear functions:
-base reward is some multiplier of FIL to bytes served. eg earn 0.01 FIL per 1 GB of bandwidth served
-the faster they served the response, eg in Mbps, apply a scalar to that base reward
-the faster the ttfb falls below a target, like 1s, apply a scalar to that base reward
-eg if we're aiming for 500ms ttfb and 100Mbps uploads, and an l1 serves a 1GB response with:
-400ms ttfb
-200Mbps average upload
-their reward would be something like:
-1GB = 0.01 FIL
-(1 + (500ms - 400ms) / 500ms))^2 = 1.21 ttfb scalar
-(1 + (200Mbps - 100Mbps) / 200Mbps)^2 = 2.25 upload scalar
-final remuneration: 0.01 FIL * 1.21 ttfb scalar * 2.25 upload scalar = 0.027225 FIL (edited) 
 
+:::info
+:thought_balloon: Ansgar made the following proposal:
 
+Apply multipliers to a base function. Multipliers are defined based on some targets we wish nodes to achieve:
+  - Base reward is a function of FIL to bytes served
+  - Multiplier based on time-to-first-byte (TTFB)
+  - Multiplier based on total upload time
+
+Example:
+
+If we're aiming for 500 ms TTFB and 100 Mbps uploads, and an Operator serves a 1 GB response with 400 ms TTFB and 200 Mbps average upload, their reward would be:
+  - Base reward: 1 GB = 0.01 FIL
+  - TTFB scalar: $(1 + \frac{500 - 400}{500})^2 = 1.21$
+  - Upload scalar: $(1 + \frac{200 - 100}{100})^2 = 2.25$
+  - Final reward: $0.01 \cdot  1.21 \cdot 2.25 = 0.027225$
+
+Some notes:
+
+- Having goals for the network and rewarding based on how far Operators are from the goals seems to be a good design
+- However, we are not letting the market set the price, and we do not have a bound on payouts
+- In this design, behaviors are multiplicative -> this means that we are incentivizing Operators to be average on all behavior instead of excellent at one and bad at the others. Is this intended?
+- We do not have info on TTFB from the transfer logs. In addition, we have the download time instead of the upload time.
+:::
 
 ## Annex
 
