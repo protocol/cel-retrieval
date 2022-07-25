@@ -129,3 +129,19 @@ Service responsible for processing the logs submitted by node operators and dist
 - [Treasury specification](https://hackmd.io/@msilvaPL/r1YWCz4j9)
 - [Saturn website](http://strn.network/#start)
 
+---
+
+## Main takeaways from discussion (Part 1)
+
+- We cannot guarantee profitability for station operators!
+- Can we use an auction model? Instead of setting a fixed price by byte, we can split a pot of rewards among the participants and let the market set the price.
+- Are behavior scores multiplicative or additive? If we have a very high TTFB, do we ignore the other behaviors?
+- Do we care about actual service or guaranteed service?
+
+---
+
+## Main takeaways from discussion (Part 2)
+
+- We can have a mechanism similar to Filecoin gas fee where we increase and decrease the rewards pot based on how the network is behaving
+- We need to figure out how to incentive honesty and fault reports. Maybe ramp up penalties based on repeating offenses?
+-  We can have different pools of rewards for each behavior and let content publishers fund each pool based on what behaviors they are interested in.
