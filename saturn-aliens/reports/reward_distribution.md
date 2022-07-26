@@ -1,5 +1,8 @@
 # Reward distribution for Saturn
 
+[![hackmd-github-sync-badge](https://hackmd.io/MqxcRhVdSi2txAKW7pCh5Q/badge)](https://hackmd.io/MqxcRhVdSi2txAKW7pCh5Q)
+
+
 #### Maria Silva, August 2022
 
 ###### tags: `Saturn aliens`
