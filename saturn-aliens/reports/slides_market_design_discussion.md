@@ -2,6 +2,7 @@
 title: Saturn market design - Team discussion
 tags: Saturn aliens
 description: Slides for supporting the discussion about how to design the Saturn market
+breaks: false
 ---
 
 <style>
@@ -14,6 +15,8 @@ description: Slides for supporting the discussion about how to design the Saturn
 ## Discussion with Saturn Team
 ### August 2022
 
+[![Generic badge](https://img.shields.io/badge/Slides%20on%20HackMD-WIP-1abc9c.svg)](https://hackmd.io/@msilvaPL/BJiZq5Anc)
+
 ---
 
 ## High-level goal
@@ -21,7 +24,7 @@ description: Slides for supporting the discussion about how to design the Saturn
 **Reliable** network capable of serving **X retrievals** per day with an average **bandwidth of Y**
 
 - *Comments:*
-  - 
+  - tbd
 
 ---
 
@@ -33,7 +36,7 @@ description: Slides for supporting the discussion about how to design the Saturn
 4. Incent a reliable and performant service, with honest operators
 
 - *Comments:*
-  - 
+  - tbd
 
 ---
 
@@ -42,7 +45,7 @@ description: Slides for supporting the discussion about how to design the Saturn
 Do we want to differentiate rewards for L1s and L2s?
 
 - *Comments:*
-  - 
+  - tbd
 
 ---
 
@@ -54,7 +57,7 @@ Do we want to differentiate rewards for L1s and L2s?
 - Do we collect get the geolocation of all nodes?
 
 - *Comments:*
-  - 
+  - tbd
 
 ---
 
@@ -64,7 +67,7 @@ Do we expect to collect any data from clients?
 
 
 - *Comments:*
-  - 
+  - tbd
 
 ---
 
@@ -73,7 +76,7 @@ Do we expect to collect any data from clients?
 Should L1s be liable for the faults of their swarm?
 
 - *Comments:*
-  - 
+  - tbd
 
 ---
 
@@ -87,5 +90,4 @@ What actions can L1s and L2s make?
 - What else?
 
 - *Comments:*
-  - 
-
+  - tbd
