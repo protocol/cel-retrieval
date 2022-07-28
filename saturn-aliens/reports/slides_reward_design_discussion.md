@@ -1,7 +1,7 @@
 ---
-title: Saturn market design - Team discussion
+title: Saturn rewards design - Team discussion
 tags: Saturn aliens
-description: Slides for supporting the discussion about how to design the Saturn market
+description: Slides for supporting the discussion about how to design Saturn's reward distribution
 breaks: false
 ---
 
@@ -11,7 +11,7 @@ breaks: false
 }
 </style>
 
-# Saturn Market design
+# Saturn's reward distribution design
 ## Discussion with Saturn Team
 ### August 2022
 
@@ -23,8 +23,11 @@ breaks: false
 
 **Reliable** network capable of serving **X retrievals** per day with an average **bandwidth of Y**
 
-- *Comments:*
-  - tbd
+----
+
+### Comments:
+
+- tbd
 
 ---
 
@@ -35,8 +38,11 @@ breaks: false
 3. Preference towards free market
 4. Incent a reliable and performant service, with honest operators
 
-- *Comments:*
-  - tbd
+----
+
+### Comments:
+
+- tbd
 
 ---
 
@@ -44,8 +50,11 @@ breaks: false
 
 Do we want to differentiate rewards for L1s and L2s?
 
-- *Comments:*
-  - tbd
+----
+
+### Comments:
+
+- tbd
 
 ---
 
@@ -56,8 +65,11 @@ Do we want to differentiate rewards for L1s and L2s?
 - Can we collect info on what requests L1s are sending to their swarms?
 - Do we collect get the geolocation of all nodes?
 
-- *Comments:*
-  - tbd
+----
+
+### Comments:
+
+- tbd
 
 ---
 
@@ -65,9 +77,11 @@ Do we want to differentiate rewards for L1s and L2s?
 
 Do we expect to collect any data from clients?
 
+----
 
-- *Comments:*
-  - tbd
+### Comments:
+
+- tbd
 
 ---
 
@@ -75,8 +89,11 @@ Do we expect to collect any data from clients?
 
 Should L1s be liable for the faults of their swarm?
 
-- *Comments:*
-  - tbd
+----
+
+### Comments:
+
+- tbd
 
 ---
 
@@ -89,5 +106,8 @@ What actions can L1s and L2s make?
 - Cheat
 - What else?
 
-- *Comments:*
-  - tbd
+----
+
+### Comments:
+
+- tbd
