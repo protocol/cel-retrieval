@@ -2,6 +2,7 @@
 title: Saturn aliens - CEL Paris colo 07-2022
 tags: Saturn aliens
 description: Slides for supporting the discussion about the Saturn Aliens project with CEL
+breaks: false
 ---
 
 # Reward distribution for Saturn
@@ -10,15 +11,15 @@ description: Slides for supporting the discussion about the Saturn Aliens projec
 
 #### Maria Silva, August 2022
 
-###### tags: `Saturn aliens`
-
 **TLDR:** TBD
 
 ## Retrieval markets and Saturn
 
 Saturn is a decentralized content delivery network (CDN) for Filecoin. It aims to bridge the gap between the content being stored on Filecoin and users wishing to quickly retrieve that content.
 
-In this context, we can think of Saturn as content delivery market. On the buyer side, websites pay Saturn to have the content they store on Filecoin delivered to their users quickly and reliably. On the seller side, node operators make their cache and bandwidth available to Saturn and earn Filecoin by fulfilling requests. Saturn thus serve as a centralized market maker, connecting websites that need content delivery to resources that would otherwise not be utilized. 
+When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are called its "swarm" and any L2 node can only be connected to a single L1 node. If the L2 nodes can the desired content cache, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
+
+In this context, we can think of Saturn as content delivery market. On the buyer side, websites pay Saturn to have the content they store on Filecoin delivered to their users quickly and reliably. On the seller side, L1 and L2 nodes operators make their cache and bandwidth available to Saturn and earn Filecoin by fulfilling requests. Saturn thus serve as a centralized market maker, connecting websites that need content delivery to resources that would otherwise not be utilized. 
 
 Previous authors have studied how to price CDNs, both centralized and decentralized.  For instance, Hosanagar et al. [1] did an empirical analysis of how to price the service provided by centralized CDNs. On the other hand, Khan Pathan et al. [2] proposes a system (and the corresponding economic model) to assist CDNs to connect and share resources, while Garmehi et al. [3] describe a scheme that incorporates peer-to-peer resources from the network's edge to a classical CDN. Both rely on a auction model and profit maximization for pricing.
 
@@ -41,7 +42,7 @@ In addition to reputation systems, penalties can be used to incent good behavior
 :hammer: WIP
 :::
 
-Before discussing what options there are for distributing rewards among Station Operators, there are some principles we wish to meet:
+Before discussing what options there are for distributing rewards among node operators, there are some principles we strive to meet:
 
 1. Simplicity over complexity -> we only add complexity if it serves a purpose and, thus, we try to build the simplest process that achieves the goal.
 2. Bounded rewards -> since we are still in a testing phase, we should limit the daily rewards to avoid overspending in case of DDoS attacks and other anomalous behavior
@@ -59,9 +60,27 @@ Fixed vs. variable
 
 Single vs. multiple
 
+
 ### Penalties
 
-Decrease rewards? How much?
+As discussed in the first section, punishment can be a strong driver to incent honesty. However, in order for the incentive to be effective, penalties need to be large enough to make the risk of detection unprofitable. In other words, the expected reward of submitting fake/altered logs should be lower than the expected reward of being honest, taking into account the probability of detection. This is one of the metrics we will model when testing different reward mechanisms in the simulation (more details in the next section).
+
+Independently of the penalty amounts and tuning required, we can think of four main penalty mechanisms, each with an increasing scope of punishment:
+
+1. *Remove flagged logs from the reward calculation*. In this mechanism, we are simply ignoring flagged logs and, thus, node operators have their rewards slightly reduced because we are ignoring the fake logs. 
+2. *Give a penalty to the total reward of flagged nodes*. Here a general penalty is applied to the total reward expected to be paid to node operators. This is an individual incentive and directly targets the expected reward of nodes. In addition, this setting allows us to penalize behaviors that can only be detected at the node level (e.g. an impossibly high number of requests served).
+3. *Give a penalty to L1 nodes based on how many flagged entities exist in their swarm*. This mechanism aims to desincourage collusion between L1 nodes and their swarm. By penalizing L1 nodes based on how their swarm behaves, we incent L1 nodes to report trustfully about how their swarm is performing.
+4. *Give a penalty to the entire network based how much flagged activity the network has*. This is the mechanism with the wider scope by making honesty a collective goal for the network. As such, it should deter collusion between nodes and create accountability to the network for "cheating".
+
+Note that these mechanisms are not exclusive, and we can use different mechanisms at the same time. For instance, we can remove flagged logs and give an additional penalty to the total reward of the operator after removing the fake logs.
+
+### Behavior scores
+
+Multiplicative vs. additive scores
+
+Average behavior vs. behavior per request
+
+Dynamic adjustments based on network performance
 
 
 ## Simulating Saturn's "economy"
