@@ -1,7 +1,7 @@
 ---
-title: Saturn aliens - CEL Paris colo 07-2022
+title: Reward distribution for Saturn
 tags: Saturn aliens
-description: Slides for supporting the discussion about the Saturn Aliens project with CEL
+description: Analysis of different options for distributing rewards in Saturn
 breaks: false
 ---
 
@@ -69,7 +69,7 @@ Independently of the penalty amounts and tuning required, we can think of four m
 
 1. *Remove flagged logs from the reward calculation*. In this mechanism, we are simply ignoring flagged logs and, thus, node operators have their rewards slightly reduced because we are ignoring the fake logs. 
 2. *Give a penalty to the total reward of flagged nodes*. Here a general penalty is applied to the total reward expected to be paid to node operators. This is an individual incentive and directly targets the expected reward of nodes. In addition, this setting allows us to penalize behaviors that can only be detected at the node level (e.g. an impossibly high number of requests served).
-3. *Give a penalty to L1 nodes based on how many flagged entities exist in their swarm*. This mechanism aims to desincourage collusion between L1 nodes and their swarm. By penalizing L1 nodes based on how their swarm behaves, we incent L1 nodes to report trustfully about how their swarm is performing.
+3. *Give a penalty to L1 nodes based on how many flagged entities exist in their swarm*. This mechanism aims to discourage collusion between L1 nodes and their swarm. By penalizing L1 nodes based on how their swarm behaves, we incent L1 nodes to report trustfully about how their swarm is performing.
 4. *Give a penalty to the entire network based how much flagged activity the network has*. This is the mechanism with the wider scope by making honesty a collective goal for the network. As such, it should deter collusion between nodes and create accountability to the network for "cheating".
 
 Note that these mechanisms are not exclusive, and we can use different mechanisms at the same time. For instance, we can remove flagged logs and give an additional penalty to the total reward of the operator after removing the fake logs.
