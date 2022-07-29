@@ -3,6 +3,7 @@ title: Saturn rewards design - Team discussion
 tags: Saturn aliens
 description: Slides for supporting the discussion about how to design Saturn's reward distribution
 breaks: false
+type: slide
 ---
 
 <style>
@@ -105,6 +106,19 @@ What actions can L1s and L2s make?
 - Increasing their bandwidth and cache
 - Cheat
 - What else?
+
+----
+
+### Comments:
+
+- tbd
+
+
+## Question #6 - Incent service - used vs available
+
+Do we want to incent actual service or offered service?
+
+Do we want to reward the actual bandwidth delivered (which depends on the clients and other external factors) or do we want to reward the bandwidth the Operator is capable of providing?
 
 ----
 
