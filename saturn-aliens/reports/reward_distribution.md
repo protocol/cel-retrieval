@@ -5,9 +5,9 @@ description: Analysis of different options for distributing rewards in Saturn
 breaks: false
 ---
 
-# Reward distribution for Saturn
-
 [![hackmd-github-sync-badge](https://hackmd.io/MqxcRhVdSi2txAKW7pCh5Q/badge)](https://hackmd.io/MqxcRhVdSi2txAKW7pCh5Q)
+
+# Reward distribution for Saturn
 
 #### Maria Silva, August 2022
 
@@ -21,9 +21,9 @@ When a user visits a website using Saturn's CDN, a request for content is submit
 
 In this context, we can think of Saturn as content delivery market. On the buyer side, websites pay Saturn to have the content they store on Filecoin delivered to their users quickly and reliably. On the seller side, L1 and L2 nodes operators make their cache and bandwidth available to Saturn and earn Filecoin by fulfilling requests. Saturn thus serve as a centralized market maker, connecting websites that need content delivery to resources that would otherwise not be utilized. 
 
-Previous authors have studied how to price CDNs, both centralized and decentralized.  For instance, Hosanagar et al. [1] did an empirical analysis of how to price the service provided by centralized CDNs. On the other hand, Khan Pathan et al. [2] proposes a system (and the corresponding economic model) to assist CDNs to connect and share resources, while Garmehi et al. [3] describe a scheme that incorporates peer-to-peer resources from the network's edge to a classical CDN. Both rely on a auction model and profit maximization for pricing.
+Previous authors have studied how to price CDNs, both centralized and decentralized.  For instance, Hosanagar et al. [1] did an empirical analysis of how to price the service provided by centralized CDNs. On the other hand, Khan Pathan et al. [2] proposes a system (and the corresponding economic model) to assist CDNs to connect and share resources, while Garmehi et al. [3] describe a scheme that incorporates peer-to-peer resources from the network's edge to a classical CDN. Both rely on an auction model and profit maximization for pricing.
 
-Although related, this work does not translate to the particular use-case of Saturn. To kick off the network, Saturn will start with some funding from PL and pay the early node operators from that pool of initial funding. As such, for the purpose of the first version of Saturn, we are only interested in defining how this initial pool should be split among node operators. In other words, we focus on the seller side of the retrieval market and try to define an optimal distribution of rewards that incents participation towards a set of shared goals.
+Although related, this work does not translate to the particular use-case of Saturn. Saturn's servers are decentralized and, as such, the costs and reward structures are not compatible with a decentralized or hybrid model. In addition, for the purpose of the first version of Saturn, we are interested in defining how a given pool of rewards should be split among node operators. In other words, we focus on the seller side of the retrieval market and try to define an optimal distribution of rewards that incents participation towards a set of shared goals.
 
 This is similar to a concept proposed by Wilkins et al. [4], the marketized-commons platform, which is defined as a platform attempting to "incentivize collaborative efforts through market principles". In this model, everyone benefits from the collective action, but participation is costly. In Saturn, all internet users will benefit from a faster content delivery, while node operators will carry the cost of participation.
 
@@ -45,20 +45,39 @@ In addition to reputation systems, penalties can be used to incent good behavior
 Before discussing what options there are for distributing rewards among node operators, there are some principles we strive to meet:
 
 1. Simplicity over complexity -> we only add complexity if it serves a purpose and, thus, we try to build the simplest process that achieves the goal.
-2. Bounded rewards -> since we are still in a testing phase, we should limit the daily rewards to avoid overspending in case of DDoS attacks and other anomalous behavior
-3. Incent a reliable and performant service -> these are the two main attributes we care about when designing incentives. First, we want Operators to serve a high volume of retrievals with a high bandwidth / fast upload time. Second, we want Operators to be reliable and fail gracefully.
-4. Incent honesty -> Operators should be incentivized to report their own faults
-5. Preference towards free market -> we try to leverage free market mechanics and supply-demand to avoid having to set a price for content delivery. Price setting on new services is a hard problem and letting the market decide on the market is a good design when we have price uncertainty.
+2. Bounded rewards -> since we are still in a testing phase, we should limit the daily rewards to avoid overspending in case of DDoS attacks and other anomalous behavior.
+3. Incent a reliable and performant service -> these are the two main attributes we care about when designing incentives. First, we want operators to serve a high volume of retrievals with a fast download time. Retrieval volume is measured by the average TB's served per day while the download time is measure as the time-to-first-byte (TTFB). Second, we want operators to be reliable and fail gracefully (this is more important for L1s than L2s).
+4. Incent honesty -> Operators should be incentivized to report their own faults and be truthful about their own logs
+5. Preference towards free market -> we try to leverage free market mechanics and supply-demand to avoid having to set a price for content delivery. Because we don't know the real costs Saturn nodes will incur when running Saturn, we need to allow for some price discovery. Price setting on new services is a hard problem and letting the market decide on the market is a good design for when we have price uncertainty. 
 
 :::warning
-:warning: Open question: do we want to incent actual service or offered service? E.g., do we want to reward the actual bandwidth delivered (which depends on the clients and other external factors) or do we want to reward the bandwidth the Operator is capable of providing?
+:warning: A note on a free market preference: it is very likely that clients will want to have a stable pricing structure that is simple to understand. So, we will use free market mechanics for price discovery, but we will very likely need a fixed price structure for clients.
 :::
+
+Having this in mind, in the next subsections we will detail the various options and mechanisms we can use in Saturn to distribute rewards.
 
 ### Reward pool
 
-Fixed vs. variable
+The reward pool is a set of Filecoin set aside to pay node operators. The idea is that, at each day, we will a use a part of this pool of rewards and distribute it among the resources committed to the network during that day. 
 
-Single vs. multiple
+Having a reward pool allows us to achieve two things:
+1. We are guaranteed to have bounded rewards have bounded rewards since we cannot spend more that what is already in the pool.
+2. We allow for price discovery on the sellers' side. In particular, we are giving a certain budget each day, and we are asking node operators to decide how many resources they are willing to contribute for that budget. When the network reaches an equilibrium, we will be able to compute at what price node operators value their resources and how much we need to charge future clients.
+
+The first consideration when defining the reward pool is whether it should be fixed or variable. In a fixed pool, the entire amount of rewards to be paid for a given time interval is defined at start and won't change based, independently of the status of the network. A common example is Bitcoin's minting model, where the total amount of rewards to be paid are defined in the protocol and do not change.
+
+On the other hand, in a variable pool, the total amount of rewards to be distributed may change due to network growth or/and client onboarding. A simple example of a variable pool in Saturn would be a scenario where content publishers are being onboarded and paying upfront to use the service. In this case, they would be funding a growing reward pool, with new clients onboarded leading to an increase in the total reward pool. The **variable pool seems to fit better Saturn** for two main reasons:
+
+1. Since Saturn is expected to be a content delivery market, having clients fund the network is the most straightforward way of building a sustainable flow of rewards.
+2. Since rewards will depend on the funding being brought into the network, all participants are incentivized to "sell" Saturn and contribute to its usage.
+
+Connected to this consideration is the definition of the payout window for the pool. For a given new inflow of funding to the reward pool, we need to define how the total funding will be split daily to pay rewards. Blockchains such as Bitcoin use an exponential decay model, where mining rewards get exponentially smaller with time. This model benefits early adopters so that the network achieves a faster growth at the start. Another option is to split the total funding equally throughout the duration of the client agreement, which would be the simplest approach. It is not clear what is the best approach here, so **this will be one of the features to test in the simulation**.
+
+The third consideration is whether we should have a singe pool or whether it should be split. Splitting means that we would assign specific amounts of Filecoin to specific groups of nodes (L1 vs. L2s) or to specific incentives (e.g. speed and reliability).
+
+Having multiple pools allows us to tweak the incentives without having to change the reward distribution formulas. For instance, if we wish to incent the network to decrease the average TTFB, we could increase the pool assigned to fast retrievals and, as a consequence, there would be more rewards distributed for that specific behavior. And the same could be done to incent more L2 nodes to join the network. It would also allow clients to pay differently based on the type of service they wish to have. For instance, a client could put more money into the "speed" pool to incent a faster delivery.
+
+Having in the mind the principle of simplicity over complexity, **having a single pool seems to be the best approach to start**. This does not mean that the idea cannot be revisited in later versions. However, for the first version, the potential gains do not compensate for the added complexity.
 
 
 ### Penalties
@@ -70,17 +89,19 @@ Independently of the penalty amounts and tuning required, we can think of four m
 1. *Remove flagged logs from the reward calculation*. In this mechanism, we are simply ignoring flagged logs and, thus, node operators have their rewards slightly reduced because we are ignoring the fake logs. 
 2. *Give a penalty to the total reward of flagged nodes*. Here a general penalty is applied to the total reward expected to be paid to node operators. This is an individual incentive and directly targets the expected reward of nodes. In addition, this setting allows us to penalize behaviors that can only be detected at the node level (e.g. an impossibly high number of requests served).
 3. *Give a penalty to L1 nodes based on how many flagged entities exist in their swarm*. This mechanism aims to discourage collusion between L1 nodes and their swarm. By penalizing L1 nodes based on how their swarm behaves, we incent L1 nodes to report trustfully about how their swarm is performing.
-4. *Give a penalty to the entire network based how much flagged activity the network has*. This is the mechanism with the wider scope by making honesty a collective goal for the network. As such, it should deter collusion between nodes and create accountability to the network for "cheating".
+4. *Give a penalty to the entire network based how much flagged activity the network has*. This is the mechanism with the wider scope by making honesty a collective goal for the network. As such, it should deter collusion between nodes and create accountability to the network for "cheating". It will also deter nodes from attacking other nodes they see as competitors in order to get a bigger pie of the rewards.
 
 Note that these mechanisms are not exclusive, and we can use different mechanisms at the same time. For instance, we can remove flagged logs and give an additional penalty to the total reward of the operator after removing the fake logs.
 
-### Behavior scores
+### Service scores
 
 Multiplicative vs. additive scores
 
 Average behavior vs. behavior per request
 
 Dynamic adjustments based on network performance
+
+Actual service vs. available service
 
 
 ## Simulating Saturn's "economy"
