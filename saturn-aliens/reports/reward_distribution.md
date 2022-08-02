@@ -75,7 +75,9 @@ Connected to this consideration is the definition of the payout window for the p
 
 The third consideration is whether we should have a singe pool or whether it should be split. Splitting means that we would assign specific amounts of Filecoin to specific groups of nodes (L1 vs. L2s) or to specific incentives (e.g. speed and reliability).
 
-Having multiple pools allows us to tweak the incentives without having to change the reward distribution formulas. For instance, if we wish to incent the network to decrease the average TTFB, we could increase the pool assigned to fast retrievals and, as a consequence, there would be more rewards distributed for that specific behavior. And the same could be done to incent more L2 nodes to join the network. It would also allow clients to pay differently based on the type of service they wish to have. For instance, a client could put more money into the "speed" pool to incent a faster delivery.
+Having multiple pools allows us to tweak the incentives without having to change the reward distribution formulas. For instance, if we wish to incent the network to decrease the average TTFB, we could increase the pool assigned to fast retrievals and, as a consequence, there would be more rewards distributed for that specific behavior. Multiple pools also allow clients to pay differently based on the type of service they wish to have. For instance, a client could put more money into the "speed" pool to incent a faster delivery.
+
+Another area where multiple pools can help is in region-based pricing. If we find that costs across regions are very different, and we wish to incent specific regions to growth, having reward pools per region is a clean way of achieving this.
 
 Having in the mind the principle of simplicity over complexity, **having a single pool seems to be the best approach to start**. This does not mean that the idea cannot be revisited in later versions. However, for the first version, the potential gains do not compensate for the added complexity.
 
@@ -91,9 +93,30 @@ Independently of the penalty amounts and tuning required, we can think of four m
 3. *Give a penalty to L1 nodes based on how many flagged entities exist in their swarm*. This mechanism aims to discourage collusion between L1 nodes and their swarm. By penalizing L1 nodes based on how their swarm behaves, we incent L1 nodes to report trustfully about how their swarm is performing.
 4. *Give a penalty to the entire network based how much flagged activity the network has*. This is the mechanism with the wider scope by making honesty a collective goal for the network. As such, it should deter collusion between nodes and create accountability to the network for "cheating". It will also deter nodes from attacking other nodes they see as competitors in order to get a bigger pie of the rewards.
 
-Note that these mechanisms are not exclusive, and we can use different mechanisms at the same time. For instance, we can remove flagged logs and give an additional penalty to the total reward of the operator after removing the fake logs.
+Note that these mechanisms are not exclusive, and we can use different mechanisms at the same time. For instance, we can remove flagged logs and give an additional penalty to the total reward of the operator after removing the fake logs. 
 
-### Service scores
+The **penalty scope and the exact amount of each penalty will be an important component to test in the simulations**.
+
+Another important consideration around penalties is whether they should only reduce future earnings or whether we should require collateral from nodes and apply penalties on the collateral as well. Having collateral has the advantage of requiring a higher commitment from node operators, while, at the same time, leveraging their loss aversion. On the other hand, collateral will have the disadvantage of increasing the entry barriers for node operators.
+
+:::warning
+:interrobang: Do we want to introduce the concept of collateral and staking? Would it make sense to have this only for L1s?
+:::
+
+### Service scoring functions
+
+A service scoring function is a function that maps service metrics, such as bandwidth, node type or TTFB, into a real number $s_i$ that defines the ratio of rewards to be given to a specific node operator $i$. 
+
+More concretely, if we have $n$ nodes ($i=1, 2, ..., n$), an amount of rewards to distribute, $R$, and service metrics for node $i$ defined by $m_i \in \mathcal{M}$, a service scoring function is a function $s: \mathcal{M} \to \mathbb{R}$ such that:
+
+1. The reward paid to node $i$ is $r_i = s(m_i) \cdot R$
+2. $\sum_{i=1}^n s(m_i) = 1$
+
+
+
+
+
+
 
 Multiplicative vs. additive scores
 
@@ -102,6 +125,11 @@ Average behavior vs. behavior per request
 Dynamic adjustments based on network performance
 
 Actual service vs. available service
+
+
+### L1s vs. L2s payouts
+
+
 
 
 ## Simulating Saturn's "economy"
