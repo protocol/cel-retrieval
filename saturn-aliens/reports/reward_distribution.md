@@ -124,6 +124,7 @@ Before detailing the scoring functions, we need to define the service metrics. I
 
 #### Bandwidth scoring functions
 
+![](https://i.imgur.com/x33K5sG.png)
 
 
 
