@@ -112,19 +112,27 @@ More concretely, if we have $n$ nodes ($i=1, 2, ..., n$), an amount of rewards t
 1. The reward paid to node $i$ is $r_i = s(m_i) \cdot R$
 2. $\sum_{i=1}^n s(m_i) = 1$
 
+Before detailing the scoring functions, we need to define the service metrics. In Saturn, service can be measured by three main metrics:
+
+1. Bandwidth - Number of bytes transferred from Saturn to its end users, in a given time-interval. This is the main metric we want to score as it encodes the network's "usage" and is the main driver of costs for node operators.
+2. Time-to-first-byte (TTFB) - one of the behaviors we wish to see in Saturn is a fast content delivery and, as such, the speed of the content delivery is an important incent vector. One way we can measure it is the TTFB recorded by the end-user, which the time between the request being sent and the first byte arriving. Note that since we do not collect logs from the end-users, we will need to estimate the average TTFB using a sample of requests performed by the orchestrator. In addition, the clients onboarded (aka the content publishers) will be able to collect TTFB, so we can also leverage their logs to estimate the average TTFB.
+3. Uptime - Reliability is another behavior we wish to see in Saturn. L1 nodes are expected to be online and, in case of failure, warn the network and fail gracefully. Another point here is that in rewarding uptime, we are, in a way, rewarding available service also. The previous two metrics focus on the actual service experienced by end-users, while uptime considers the nodes' availability to perform services for the network.
+
+:::warning
+:warning: there is another behavior we are not discussing here - geographical coverage. Incentivizing certain regions by providing bigger rewards would be more easily addressed using multiple pools. Could this be something to tackle in later versions, once we have a clearer idea of where the users and node operators are located?
+:::
+
+#### Bandwidth scoring functions
 
 
 
 
+#### TTFB scoring functions
 
 
-Multiplicative vs. additive scores
 
-Average behavior vs. behavior per request
+#### Uptime scoring functions
 
-Dynamic adjustments based on network performance
-
-Actual service vs. available service
 
 
 ### L1s vs. L2s payouts
