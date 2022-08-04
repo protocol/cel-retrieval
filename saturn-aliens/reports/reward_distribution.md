@@ -17,7 +17,7 @@ breaks: false
 
 Saturn is a decentralized content delivery network (CDN) for Filecoin. It aims to bridge the gap between the content being stored on Filecoin and users wishing to quickly retrieve that content.
 
-When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are called its "swarm" and any L2 node can only be connected to a single L1 node. If the L2 nodes can the desired content cache, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
+When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and any L2 node can only be connected to a single L1 node. If the L2 nodes can the desired content cache, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
 
 In this context, we can think of Saturn as content delivery market. On the buyer side, websites pay Saturn to have the content they store on Filecoin delivered to their users quickly and reliably. On the seller side, L1 and L2 nodes operators make their cache and bandwidth available to Saturn and earn Filecoin by fulfilling requests. Saturn thus serve as a centralized market maker, connecting websites that need content delivery to resources that would otherwise not be utilized. 
 
@@ -25,13 +25,13 @@ Previous authors have studied how to price CDNs, both centralized and decentrali
 
 Although related, this work does not translate to the particular use-case of Saturn. Saturn's servers are decentralized and, as such, the costs and reward structures are not compatible with a decentralized or hybrid model. In addition, for the purpose of the first version of Saturn, we are interested in defining how a given pool of rewards should be split among node operators. In other words, we focus on the seller side of the retrieval market and try to define an optimal distribution of rewards that incents participation towards a set of shared goals.
 
-This is similar to a concept proposed by Wilkins et al. [4], the marketized-commons platform, which is defined as a platform attempting to "incentivize collaborative efforts through market principles". In this model, everyone benefits from the collective action, but participation is costly. In Saturn, all internet users will benefit from a faster content delivery, while node operators will carry the cost of participation.
+This is similar to a concept proposed by Wilkins et al. [4], the marketized-commons platform, which is defined as a platform attempting to “incentivize collaborative efforts through market principles“. In this model, everyone benefits from the collective action, but participation is costly. In Saturn, all internet users will benefit from a faster content delivery, while node operators will carry the cost of participation.
 
 Interestingly, Wilkins et al. [4] argues that financial incentives are not the main driver of participation in the commons and that platforms that solely rely on financial incentives have a hard time sustaining participation. To combat this, the authors suggest taking into consideration the participants' social identities. Specifically for incentives, they state that the platform's reward system needs to incorporate the social values of the group and reward collective behavior. This is a valuable takeaway for Saturn. In our case, we need to be clear about the collective goals for the network and incent node operators to achieve them as a group.
 
 Another important problem Saturn will need to meet is the issue of honesty. Because we don't have an efficient way to cryptographically proof retrievals, we need to take the logs submitted by node operators as the signal to distribute rewards. As such, the network is open to attack vectors where untrustworthy nodes submit fake or altered logs to collect more rewards.
 
-The issue if dishonesty in online platforms in not new. A common place where this issue arises is in online marketplaces and C2C commerce, where authors usually tackle dishonesty through user feedback and reputation systems [5] [6] [7]. Dewan and Dasgupta [8] and Aljuraidan et al. [9] also explore how reputation systems can aid with dishonesty, although in different applications. Dewan and Dasgupta [8] look into outsourcing computation while Aljuraidan et al. [9] analyze peer-to-peer networks. All the authors conclude that reputation systems (and the potential lost of future rewards) can be an effective way of incenting good behavior. However, they can take advantage of user feedback and/or "verified tests" to feed their reputation systems, which Saturn is not expected to have in a first phase.
+The issue if dishonesty in online platforms in not new. A common place where this issue arises is in online marketplaces and C2C commerce, where authors usually tackle dishonesty through user feedback and reputation systems [5] [6] [7]. Dewan and Dasgupta [8] and Aljuraidan et al. [9] also explore how reputation systems can aid with dishonesty, although in different applications. Dewan and Dasgupta [8] look into outsourcing computation while Aljuraidan et al. [9] analyze peer-to-peer networks. All the authors conclude that reputation systems (and the potential lost of future rewards) can be an effective way of incenting good behavior. However, they can take advantage of user feedback and/or “verified tests” to feed their reputation systems, which Saturn is not expected to have in a first phase.
 
 In addition to reputation systems, penalties can be used to incent good behavior. Kroupa [10] analyze the impact of punishment in human cooperation and concluded that punishment can be an efficient way of maintaining cooperation. However, punishment requires a system to detect undesired behavior and penalties that are large enough to balance the system's detection rate.
 
@@ -44,11 +44,11 @@ In addition to reputation systems, penalties can be used to incent good behavior
 
 Before discussing what options there are for distributing rewards among node operators, there are some principles we strive to meet:
 
-1. Simplicity over complexity -> we only add complexity if it serves a purpose and, thus, we try to build the simplest process that achieves the goal.
-2. Bounded rewards -> since we are still in a testing phase, we should limit the daily rewards to avoid overspending in case of DDoS attacks and other anomalous behavior.
-3. Incent a reliable and performant service -> these are the two main attributes we care about when designing incentives. First, we want operators to serve a high volume of retrievals with a fast download time. Retrieval volume is measured by the average TB's served per day while the download time is measure as the time-to-first-byte (TTFB). Second, we want operators to be reliable and fail gracefully (this is more important for L1s than L2s).
-4. Incent honesty -> Operators should be incentivized to report their own faults and be truthful about their own logs
-5. Preference towards free market -> we try to leverage free market mechanics and supply-demand to avoid having to set a price for content delivery. Because we don't know the real costs Saturn nodes will incur when running Saturn, we need to allow for some price discovery. Price setting on new services is a hard problem and letting the market decide on the market is a good design for when we have price uncertainty. 
+1. Simplicity over complexity → we only add complexity if it serves a purpose and, thus, we try to build the simplest process that achieves the goal.
+2. Bounded rewards → since we are still in a testing phase, we should limit the daily rewards to avoid overspending in case of DDoS attacks and other anomalous behavior.
+3. Incent a reliable and performant service → these are the two main attributes we care about when designing incentives. First, we want operators to serve a high volume of retrievals with a fast download time. Retrieval volume is measured by the average TB's served per day while the download time is measure as the time-to-first-byte (TTFB). Second, we want operators to be reliable and fail gracefully (this is more important for L1s than L2s).
+4. Incent honesty → Operators should be incentivized to report their own faults and be truthful about their own logs
+5. Preference towards free market → we try to leverage free market mechanics and supply-demand to avoid having to set a price for content delivery. Because we don't know the real costs Saturn nodes will incur when running Saturn, we need to allow for some price discovery. Price setting on new services is a hard problem and letting the market decide on the market is a good design for when we have price uncertainty. 
 
 :::warning
 :warning: A note on a free market preference: it is very likely that clients will want to have a stable pricing structure that is simple to understand. So, we will use free market mechanics for price discovery, but we will very likely need a fixed price structure for clients.
@@ -69,13 +69,13 @@ The first consideration when defining the reward pool is whether it should be fi
 On the other hand, in a variable pool, the total amount of rewards to be distributed may change due to network growth or/and client onboarding. A simple example of a variable pool in Saturn would be a scenario where content publishers are being onboarded and paying upfront to use the service. In this case, they would be funding a growing reward pool, with new clients onboarded leading to an increase in the total reward pool. The **variable pool seems to fit better Saturn** for two main reasons:
 
 1. Since Saturn is expected to be a content delivery market, having clients fund the network is the most straightforward way of building a sustainable flow of rewards.
-2. Since rewards will depend on the funding being brought into the network, all participants are incentivized to "sell" Saturn and contribute to its usage.
+2. Since rewards will depend on the funding being brought into the network, all participants are incentivized to “sell” Saturn and contribute to its usage.
 
 Connected to this consideration is the definition of the payout window for the pool. For a given new inflow of funding to the reward pool, we need to define how the total funding will be split daily to pay rewards. Blockchains such as Bitcoin use an exponential decay model, where mining rewards get exponentially smaller with time. This model benefits early adopters so that the network achieves a faster growth at the start. Another option is to split the total funding equally throughout the duration of the client agreement, which would be the simplest approach. It is not clear what is the best approach here, so **this will be one of the features to test in the simulation**.
 
-The third consideration is whether we should have a singe pool or whether it should be split. Splitting means that we would assign specific amounts of Filecoin to specific groups of nodes (L1 vs. L2s) or to specific incentives (e.g. speed and reliability).
+The third consideration is whether we should have a singe pool or whether it should be split. Splitting means that we would assign specific amounts of Filecoin to specific groups of nodes (L1 vs. L2s) or to specific incentives (e.g., speed and reliability).
 
-Having multiple pools allows us to tweak the incentives without having to change the reward distribution formulas. For instance, if we wish to incent the network to decrease the average TTFB, we could increase the pool assigned to fast retrievals and, as a consequence, there would be more rewards distributed for that specific behavior. Multiple pools also allow clients to pay differently based on the type of service they wish to have. For instance, a client could put more money into the "speed" pool to incent a faster delivery.
+Having multiple pools allows us to tweak the incentives without having to change the reward distribution formulas. For instance, if we wish to incent the network to decrease the average TTFB, we could increase the pool assigned to fast retrievals and, as a consequence, there would be more rewards distributed for that specific behavior. Multiple pools also allow clients to pay differently based on the type of service they wish to have. For instance, a client could put more money into the “speed” pool to incent a faster delivery.
 
 Another area where multiple pools can help is in region-based pricing. If we find that costs across regions are very different, and we wish to incent specific regions to growth, having reward pools per region is a clean way of achieving this.
 
@@ -89,9 +89,9 @@ As discussed in the first section, punishment can be a strong driver to incent h
 Independently of the penalty amounts and tuning required, we can think of four main penalty mechanisms, each with an increasing scope of punishment:
 
 1. *Remove flagged logs from the reward calculation*. In this mechanism, we are simply ignoring flagged logs and, thus, node operators have their rewards slightly reduced because we are ignoring the fake logs. 
-2. *Give a penalty to the total reward of flagged nodes*. Here a general penalty is applied to the total reward expected to be paid to node operators. This is an individual incentive and directly targets the expected reward of nodes. In addition, this setting allows us to penalize behaviors that can only be detected at the node level (e.g. an impossibly high number of requests served).
+2. *Give a penalty to the total reward of flagged nodes*. Here a general penalty is applied to the total reward expected to be paid to node operators. This is an individual incentive and directly targets the expected reward of nodes. In addition, this setting allows us to penalize behaviors that can only be detected at the node level (e.g., an impossibly high number of requests served).
 3. *Give a penalty to L1 nodes based on how many flagged entities exist in their swarm*. This mechanism aims to discourage collusion between L1 nodes and their swarm. By penalizing L1 nodes based on how their swarm behaves, we incent L1 nodes to report trustfully about how their swarm is performing.
-4. *Give a penalty to the entire network based how much flagged activity the network has*. This is the mechanism with the wider scope by making honesty a collective goal for the network. As such, it should deter collusion between nodes and create accountability to the network for "cheating". It will also deter nodes from attacking other nodes they see as competitors in order to get a bigger pie of the rewards.
+4. *Give a penalty to the entire network based how much flagged activity the network has*. This is the mechanism with the wider scope by making honesty a collective goal for the network. As such, it should deter collusion between nodes and create accountability to the network for “cheating”. It will also deter nodes from attacking other nodes they see as competitors in order to get a bigger pie of the rewards.
 
 Note that these mechanisms are not exclusive, and we can use different mechanisms at the same time. For instance, we can remove flagged logs and give an additional penalty to the total reward of the operator after removing the fake logs. 
 
@@ -107,34 +107,65 @@ Another important consideration around penalties is whether they should only red
 
 A service scoring function is a function that maps service metrics, such as bandwidth, node type or TTFB, into a real number $s_i$ that defines the ratio of rewards to be given to a specific node operator $i$. 
 
-More concretely, if we have $n$ nodes ($i=1, 2, ..., n$), an amount of rewards to distribute, $R$, and service metrics for node $i$ defined by $m_i \in \mathcal{M}$, a service scoring function is a function $s: \mathcal{M} \to \mathbb{R}$ such that:
+More concretely, if we have $n$ nodes ($i=1, 2, ..., n$), an amount of rewards to distribute, $R$, and service metrics for node $i$ defined by $m_i \in \mathcal{M}$, a service scoring function is a function $S: \mathcal{M} \to \mathbb{R}$ such that:
 
-1. The reward paid to node $i$ is $r_i = s(m_i) \cdot R$
-2. $\sum_{i=1}^n s(m_i) = 1$
+1. The reward paid to node $i$ is $r_i = S(m_i) \cdot R$
+2. $\sum_{i=1}^n S(m_i) = 1$
 
 Before detailing the scoring functions, we need to define the service metrics. In Saturn, service can be measured by three main metrics:
 
-1. Bandwidth - Number of bytes transferred from Saturn to its end users, in a given time-interval. This is the main metric we want to score as it encodes the network's "usage" and is the main driver of costs for node operators.
-2. Time-to-first-byte (TTFB) - one of the behaviors we wish to see in Saturn is a fast content delivery and, as such, the speed of the content delivery is an important incent vector. One way we can measure it is the TTFB recorded by the end-user, which the time between the request being sent and the first byte arriving. Note that since we do not collect logs from the end-users, we will need to estimate the average TTFB using a sample of requests performed by the orchestrator. In addition, the clients onboarded (aka the content publishers) will be able to collect TTFB, so we can also leverage their logs to estimate the average TTFB.
-3. Uptime - Reliability is another behavior we wish to see in Saturn. L1 nodes are expected to be online and, in case of failure, warn the network and fail gracefully. Another point here is that in rewarding uptime, we are, in a way, rewarding available service also. The previous two metrics focus on the actual service experienced by end-users, while uptime considers the nodes' availability to perform services for the network.
+1. Bandwidth — Number of bytes transferred from Saturn to its end users, in a given time-interval. This is the main metric we want to score as it encodes the network's “usage” and is the main driver of costs for node operators.
+2. Time-to-first-byte (TTFB) — one of the behaviors we wish to see in Saturn is a fast content delivery and, as such, the speed of the content delivery is an important incent vector. One way we can measure it is the TTFB recorded by the end-user, which the time between the request being sent and the first byte arriving. Note that since we do not collect logs from the end-users, we will need to estimate the average TTFB using a sample of requests performed by the orchestrator. In addition, the clients onboarded (aka the content publishers) will be able to collect TTFB, so we can also leverage their logs to estimate the average TTFB.
+3. Uptime — Reliability is another behavior we wish to see in Saturn. L1 nodes are expected to be online and, in case of failure, warn the network and fail gracefully. Another point here is that in rewarding uptime, we are, in a way, rewarding available service also. The previous two metrics focus on the actual service experienced by end-users, while uptime considers the nodes' availability to perform services for the network.
 
 :::warning
 :warning: there is another behavior we are not discussing here - geographical coverage. Incentivizing certain regions by providing bigger rewards would be more easily addressed using multiple pools. Could this be something to tackle in later versions, once we have a clearer idea of where the users and node operators are located?
 :::
 
-#### Bandwidth scoring functions
+#### Bandwidth scoring function
 
-![](https://i.imgur.com/x33K5sG.png)
+When scoring bandwidth, the higher the bandwidth, the larger the share of rewards should be. Thus, not only the scoring function needs to meet criteria define above, but it also needs to be monotonically increasing. We can achieve this using a polynomial of the bandwidth fraction. More concretely, if we have:
+
+- $n$ node operators ($i=1, 2, ..., n$)
+- $R$: amount of rewards to distribute in current epoch
+- $b_i$: total bandwidth served by node operator $i$ in the current epoch
+
+The rewards paid to node operator $i$ in the current epoch are defined by the following **scoring function**:
+
+$S(b_i) := \frac{b_i^k}{\sum_{j=1}^n b_j^k} \cdot R$
+
+Where $k \in \mathbb{R}^+$ is any real positive value. Although simple, this formula allows for some flexibility rewarding the reward distribution, by varying $k$. The next figure plots the ratio of rewards given to a single node operator in relation to the ratio of bandwidth they contributed. Each line represents a different $k$.
+
+<div style="text-align:center">
+<img width="500" src="https://i.imgur.com/x33K5sG.png">
+<br>
+<br>
+</div>
+
+With a supra linear scoring function ($k > 1$), rewards increase faster than the share of bandwidth contributed. This incents operators to rump up their service since they get increasingly more rewards by increasing the bandwidth they service. On the other hand, with a sublinear function ($k<1$), the share of rewards increases slower than the share of bandwidth provided. This incents a higher distribution of rewards since it gets ever harder to get a bigger share of rewards by serving more bandwidth.
+
+It is not clear what the best value for $k$ is. Therefore, this will be a parameter we will tune during the simulation analysis.
+
+
+#### TTFB scoring function
+
+For TTFB, we cannot directly use the functions we used for bandwidth. The reason is two-fold:
+
+1. Having a lower TTFB is a good thing, which means the scoring function needs to be monotonically decreasing on the TTFB
+2. Nodes may contribute both positively and negatively to the network's TTFB. In other words, if many nodes join the network with a high TTFB, they can lower the entire network performance. On the other hand, for bandwidth, nodes can only add more bandwidth, so they cannot negatively affect the network on that particular metric.
+
+Another important consideration here is that a single request with a very low TTFB is not very valuable to the network in general. One can only say that Saturn delivers a *fast* service when a significant portion of node operators are *fast*. With this in mind, we are not interested in incentivizing single nodes to decrease their TTFB indefinitely, but instead we want the entire network to be better than a certain threshold of TTFB.
+
+One way to encode this incentive is to use the percentage of requests of a given node operator with a TTFB lower than a predefined threshold. With this new metric, we can use the exact same functions defined for bandwidth. At the same time, we avoid rewarding node operators on achieving a great TTFB on a few requests and, instead, reward by how much they can be better than the threshold.
+
+Why do we use the percentage instead of the number of requests? If we use the number of requests directly, we would be considering the usage indirectly. Two node operators with a TTFB always bellow the threshold would receive different rewards solely based on the number of requests they served.
+
+
+#### Uptime scoring function
 
 
 
-#### TTFB scoring functions
-
-
-
-#### Uptime scoring functions
-
-
+#### Combining scoring functions
 
 ### L1s vs. L2s payouts
 
