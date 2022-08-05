@@ -11,7 +11,9 @@ breaks: false
 
 #### Maria Silva, August 2022
 
-**TLDR:** TBD
+In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@msilvaPL/r1YWCz4j9).
+
+We start with a summary of similar work and projects. Then, we discuss all the options and technical details of how to design the reward distribution for Saturn. We conclude the report with an empirical analysis of the options and how they may influence honesty and service [This last part is still WIP!!].
 
 ## Retrieval markets and Saturn
 
