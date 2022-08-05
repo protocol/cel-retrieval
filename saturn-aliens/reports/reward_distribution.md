@@ -17,7 +17,7 @@ breaks: false
 
 Saturn is a decentralized content delivery network (CDN) for Filecoin. It aims to bridge the gap between the content being stored on Filecoin and users wishing to quickly retrieve that content.
 
-When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and any L2 node can only be connected to a single L1 node. If the L2 nodes can the desired content cache, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
+When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and an L2 node can only be connected to a single L1 node. If the L2 nodes have the desired content cached, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
 
 In this context, we can think of Saturn as content delivery market. On the buyer side, websites pay Saturn to have the content they store on Filecoin delivered to their users quickly and reliably. On the seller side, L1 and L2 nodes operators make their cache and bandwidth available to Saturn and earn Filecoin by fulfilling requests. Saturn thus serve as a centralized market maker, connecting websites that need content delivery to resources that would otherwise not be utilized. 
 
@@ -37,10 +37,6 @@ In addition to reputation systems, penalties can be used to incent good behavior
 
 
 ## Reward distribution design
-
-:::info
-:hammer: WIP
-:::
 
 Before discussing what options there are for distributing rewards among node operators, there are some principles we strive to meet:
 
@@ -127,12 +123,11 @@ Before detailing the scoring functions, we need to define the service metrics. I
 When scoring bandwidth, the higher the bandwidth, the larger the share of rewards should be. Thus, not only the scoring function needs to meet criteria define above, but it also needs to be monotonically increasing. We can achieve this using a polynomial of the bandwidth fraction. More concretely, if we have:
 
 - $n$ node operators ($i=1, 2, ..., n$)
-- $R$: amount of rewards to distribute in current epoch
 - $b_i$: total bandwidth served by node operator $i$ in the current epoch
 
 The rewards paid to node operator $i$ in the current epoch are defined by the following **scoring function**:
 
-$S(b_i) := \frac{b_i^k}{\sum_{j=1}^n b_j^k} \cdot R$
+$S(b_i) := \frac{b_i^k}{\sum_{j=1}^n b_j^k}$
 
 Where $k \in \mathbb{R}^+$ is any real positive value. Although simple, this formula allows for some flexibility rewarding the reward distribution, by varying $k$. The next figure plots the ratio of rewards given to a single node operator in relation to the ratio of bandwidth they contributed. Each line represents a different $k$.
 
@@ -158,19 +153,49 @@ Another important consideration here is that a single request with a very low TT
 
 One way to encode this incentive is to use the percentage of requests of a given node operator with a TTFB lower than a predefined threshold. With this new metric, we can use the exact same functions defined for bandwidth. At the same time, we avoid rewarding node operators on achieving a great TTFB on a few requests and, instead, reward by how much they can be better than the threshold.
 
-Why do we use the percentage instead of the number of requests? If we use the number of requests directly, we would be considering the usage indirectly. Two node operators with a TTFB always bellow the threshold would receive different rewards solely based on the number of requests they served.
+Why do we use the percentage instead of the number of requests? If we chose the number of requests, we would be indirectly considering network usage in this incentive. Two node operators with a TTFB always bellow the threshold would receive different rewards solely based on the number of requests they served.
 
 
 #### Uptime scoring function
 
-
+:::info
+:hammer: Need to check with Saturn team what exact data we can use to measure this!!
+:::
 
 #### Combining scoring functions
 
-### L1s vs. L2s payouts
+Now that we have described what functions could be used to score each service, we need to define how we can combine services into a single scoring function.
 
+Let's assume that we have two service metrics we wish to combine and that their individual scoring functions are $S_1(a_i) = \frac{a_i^m}{\sum_{j=1}^n a_j^m}$ and $S_2(b_i) = \frac{b_i^n}{\sum_{j=1}^n b_j^n}$, respectively. In this case, we can define the following two ways of combining the two individual scoring functions into a new scoring functions:
 
+- Linear combination: $S(a_i, b_i) = q \cdot S_1(a_i) + (1-q) \cdot S_2(b_i)$, where $q \in [0,1]$
+- Direct multiplication: $S(a_i, b_i)= \frac{a_i^m \cdot b_i^n}{\sum_{j=1}^n a_j^m \cdot b_j^n}$
 
+The linear combination has the advantage of being easy to attribute relative value to each service metric (by changing the $q$ parameter). It is akin to having two reward pools since the service metric $a$ receives the fixed amount of rewards $qR$ while service metric $b$ receives the remaining. It is also simple to interpret, which is a huge advantage.
+
+On the other hand, the direct multiplication incents a more balanced performance among all the services. Because scores are multiplied, if one of the scores is very small, it will have a bigger impact on the total reward than what the linear combination would experience.
+
+It is not clear the best approach here and this is yet another feature we will test with the simulation. However, unless there is a strong argument in favor of the direct multiplication approach, the **interpretability and flexibility of the linear combination approach make it the better option**.
+
+### L2s payouts
+
+In the first section, we described how L1 and L2 nodes are expected to interact within Saturn. Running a L1 node is a more demanding operation than running a L2 node, both in terms of hardware requirements and service expectation. They are the ones serving requests directly to end-users and processing all the requests coming to Saturn. On the other hand, L2 nodes form swarms around single L1 nodes and serve as an extension of their cache. They are home machines, with low hardware requirements, that can go offline as they please.
+
+Thinking of L2 swarms as cache-extensions of their L1 nodes is a good analogy to set payouts. In a way, L2s contribute to the performance of L1 nodes. The larger the swarm, the faster the L1 node will deliver requests. As such, it makes sense for L1s to share the rewards they receive with their swarm. In particular, we can use the previous scoring functions to distribute rewards among L1 nodes. Then, based on how each L2 contributed to the service the L1s provided, a part of the rewards distributed will be passed on to the swarms.
+
+With this in mind, the question to answer is how can we measure the contribution of L2 nodes to the service provided by their L1 node? When a request is submitted to an L1 node, there are two possibilities - either the L1 node has the content cached or it does not. If the content is cached, then the swarm has no contribution to the service. However, if the content is not cached, the L1 node will request the data to its swarm. The L2 nodes that have that content in cache will start sending it to the L1 node and, as such, a part of the rewards obtained from that request should be shared with the L2 operators that sent the content. The exact breakdown of how many rewards should be shared is still to be defined, but the service scoring function here should be simple (maybe consider only bandwidth?). 
+
+:::warning
+:interrobang: Can we think of any problems derived from rewarding L2s solely based on bandwidth?
+:::
+
+:::warning
+:interrobang: What happens if the L1 node needs to cache-miss to the IPFS gateway? If we use the bandwidth provided by L2s, in this case, the L1 node would not share any rewards with its swarm. However, in that case, are we not incentivizing L1s to cache-miss directly to the IPFS gateway?
+:::
+
+:::warning
+:warning: Another consideration here is whether we should pay L2s at all. Recall that Wilkins et al. [4] argued that financial incentives are not the main driver of participation in the commons and can sometimes worsen participation. Are there any other types of incentives we could offer instead? E.g., access to premium features or some sort of bragging items?
+:::
 
 ## Simulating Saturn's "economy"
 
