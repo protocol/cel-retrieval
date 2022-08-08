@@ -22,7 +22,7 @@ Saturn is a decentralized content delivery network (CDN) for Filecoin. It aims t
 When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and an L2 node only connects to L1 nodes in its vicinity. If the L2 nodes have the desired content cached, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
 
 <div style="text-align:center">
-<img width="550" src="https://i.imgur.com/N1kbKa5.png">
+<img width="550" src="https://i.imgur.com/4RIDQEb.png">
 <br>
 <br>
 </div>
