@@ -19,7 +19,7 @@ We start with a summary of similar work and projects. Then, we discuss all the o
 
 Saturn is a decentralized content delivery network (CDN) for Filecoin. It aims to bridge the gap between the content being stored on Filecoin and users wishing to quickly retrieve that content.
 
-When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and an L2 node only connects to L1 nodes in its vicinity. If the L2 nodes have the desired content cached, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
+When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and an L2 node only connects to L1 nodes in its vicinity. If the L2 nodes have the desired content cached, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway or Filecoin's Storage Providers. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
 
 <div style="text-align:center">
 <img width="550" src="https://i.imgur.com/4RIDQEb.png">
@@ -31,7 +31,7 @@ In this context, we can think of Saturn as content delivery market. On the buyer
 
 Previous authors have studied how to price CDNs, both centralized and decentralized.  For instance, Hosanagar et al. [1] did an empirical analysis of how to price the service provided by centralized CDNs. On the other hand, Khan Pathan et al. [2] proposes a system (and the corresponding economic model) to assist CDNs to connect and share resources, while Garmehi et al. [3] describe a scheme that incorporates peer-to-peer resources from the network's edge to a classical CDN. Both rely on an auction model and profit maximization for pricing.
 
-Although related, this work does not translate to the particular use-case of Saturn. Saturn's servers are decentralized and, as such, the costs and reward structures are not compatible with a decentralized or hybrid model. In addition, for the purpose of the first version of Saturn, we are interested in defining how a given pool of rewards should be split among node operators. In other words, we focus on the seller side of the retrieval market and try to define an optimal distribution of rewards that incents participation towards a set of shared goals.
+Although related, this work does not translate to the particular use-case of Saturn. Saturn's servers are decentralized and, as such, the costs and reward structures are not compatible with a centralized or hybrid model. In addition, for the purpose of the first version of Saturn, we are interested in defining how a given pool of rewards should be split among node operators. In other words, we focus on the seller side of the retrieval market and try to define an optimal distribution of rewards that incents participation towards a set of shared goals.
 
 This is similar to a concept proposed by Wilkins et al. [4], the marketized-commons platform, which is defined as a platform attempting to “incentivize collaborative efforts through market principles“. In this model, everyone benefits from the collective action, but participation is costly. In Saturn, all internet users will benefit from a faster content delivery, while node operators will carry the cost of participation.
 
@@ -76,10 +76,6 @@ On the other hand, in a pool that is not pre-defined (i.e. variable), the total 
 2. Since rewards will depend on the funding being brought into the network, all participants are incentivized to “sell” Saturn and contribute to its usage.
 
 However, a variable pool has the disadvantage of being less predicable, which can deter node operators to make big upfront investments. Another option is to have a hybrid pool that contains a pre-determined base component and a variable component. The base component would be funded by a fixed initial pool of Filecoin while the variable component would be funded by the new clients joining the network. This way, the base pool gives more predictability, whiles the variable pool encourages growth and adoption.
-
-:::warning
-:interrobang: In a hybrid reward pool, how do we fund the initial pre-determined pool?
-:::
 
 Connected to this consideration is the definition of the payout window for the pool. For a given new inflow of funding to the reward pool, we need to define how the total funding will be split daily to pay rewards. Blockchains such as Bitcoin use an exponential decay model, where mining rewards get exponentially smaller with time. This model benefits early adopters so that the network achieves a faster growth at the start. Another option is to split the total funding equally throughout the duration of the client agreement, which would be the simplest approach. It is not clear what is the best approach here, so **this will be one of the features to test in the simulation**.
 
@@ -217,9 +213,68 @@ With this in mind, the question to answer is how can we measure the contribution
 :hammer: WIP
 :::
 
-### Fair distribution of rewards
+### Fair distribution of rewards (L1 nodes)
 
-TBD
+The main goal of this analysis is to compare how different scoring functions impact the distribution of rewards among L1 node operators in a **single epoch**. Throughout the analysis we assume that we have 1000 L1 operators, and we generate their service metrics using specific statistical distributions. The plots bellow show the histograms for the three service metrics generated - total bandwidth, % of requests above a speed threshold (which can be TTFB, download speed or both), and uptime percentage.
+
+| ![](https://i.imgur.com/buTtSZ8.png) | ![](https://i.imgur.com/aDP8SXA.png) | ![](https://i.imgur.com/0nHGvle.png) |
+| ------------------------------------ | ------------------------------------ | ------------------------------------ |
+
+Using these randomly generated service metrics, we tested different scoring functions, namely:
+
+1. Linear combination:
+   1. Balanced linear - individual linear scoring functions (exponent $k=1$) + linear combination split equally between the three services 
+   2. Balanced sublinear - individual sublinear scoring functions + linear combination split equally between the three services 
+   3. Balanced supra-linear - individual supra-linear scoring functions + linear combination split equally between the three services
+   4. High bandwidth linear - individual linear scoring functions + linear combination with higher weight for bandwidth
+   5. High bandwidth sublinear - individual sublinear scoring functions + linear combination with higher weight for bandwidth
+   6. High bandwidth supra-linear - individual supra-linear scoring functions + linear combination with higher weight for bandwidth
+2. Direct multiplication:
+   1. All sublinear - sublinear exponent $k=0.5$ for the three metrics
+   2. All linear - linear exponent $k=1$ for the three metrics
+   3. All supra-linear - supra-linear exponent $k=2$ for the three metrics
+   4. Bandwidth smooth - linear exponent for bandwidth ($k = 1$) and sublinear exponent for the remaining two metrics ($k = 0.5$)
+
+For each scoring functions, we computed the reward distribution for each of the 1000 node operators in a single epoch. Note that here we assume that the total reward to be distributed is $R=100$.
+
+The first conclusion here is that the choice of scoring function has a significant impact on the overall distribution of rewards among node operators. The following table illustrated this by reporting the minimum and maximum reward paid to a single operator and the [Gini index](https://en.wikipedia.org/wiki/Gini_coefficient). Recall that the Gini index is a measure of statistical dispersion that represents wealth inequality within a group. It varies between 0 and 1, with 0 expressing perfect equality and 1 expressing maximal inequality.
+
+|                       | Scoring function      | Gini index | Min. payout | Max. payout |
+| --------------------- | --------------------- | ---------- | ----------- | ----------- |
+| Linear combination    | Balanced sublinear    | 0.079901   | 0.06        | 0.15        |
+|                       | Balanced linear       | 0.143888   | 0.05        | 0.22        |
+|                       | Balanced supra-linear | 0.369626   | 0.01        | 0.61        |
+|                       | High-bw sublinear     | 0.117397   | 0.05        | 0.17        |
+|                       | High-bw linear        | 0.210802   | 0.04        | 0.28        |
+|                       | High-bw supra-linear  | 0.380111   | 0.01        | 0.57        |
+| Direct multiplication | All sublinear         | 0.239131   | 0.01        | 0.24        |
+|                       | All linear            | 0.427477   | 0.001       | 0.50        |
+|                       | All supra-linear      | 0.684226   | 0.000002    | 1.47        |
+|                       | Bandwidth smooth      | 0.419714   | 0.001       | 0.48        |
+
+
+As expected, the sublinear functions lead to the highest equality in rewards distribution, while the supra-linear function lead to the highest inequality in reward payouts. In other words, with supra-linear functions, we are rewarding more the high-performers at the expense of the low performers.
+
+In addition, the direct multiplication functions tend to lead to a higher concentration of rewards among high performers, when compared with the linear combination function. The only exception is the all sublinear, which has a lower Gini than the two most concentrated function among the linear combination group.
+
+There is another different in the dynamics between the linear combinations and the direct multiplication functions, which is illustrated in the next two plots. Here we see the total payout given to each node operator against the share of bandwidth they provided.
+
+| ![](https://i.imgur.com/1gNfug1.png) | ![](https://i.imgur.com/yOGMLNG.png) |
+| ------------------------------------ | ------------------------------------ |
+
+Once again, we confirm the effect of the exponent $k$ on the rewards' distribution - the share of rewards grows faster than the share of bandwidth in supra linear functions, while the reserve happens in the sublinear functions.
+
+However, the interesting observation here is how much the linear functions smooth-out poor performances in the other metrics besides bandwidth. The effect is most accentuated in the all supra-linear scoring function, which a lower performance in either download speed or uptime leading to a significant decrease in rewards. 
+
+This is a very relevant mechanism as we are incenting nodes to be good at all the metrics and, at the same, penalizing heavily any decrease in performance. Note that the bandwidth smooth follows the same trend as the all linear, but since the speed and uptime metrics get a sublinear exponent, the "penalty" for poor performance is smoothed.
+
+:::info
+:hammer: Final suggestion!
+:::
+
+:::warning
+:warning: An important caveat: the reward distribution obtained above depend heavily on the service metrics generated. If we were to observe a higher dispersion in performance, then the reward inequality would increase. In addition, as expected, this increase would be felt more heavily on the supra-linear functions.
+:::
 
 ### Incentivizing honesty
 
