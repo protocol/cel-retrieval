@@ -105,9 +105,7 @@ The **penalty scope and the exact amount of each penalty will be an important co
 
 Another important consideration around penalties is whether they should only reduce future earnings or whether we should require collateral from nodes and apply penalties on the collateral as well. Having collateral has the advantage of requiring a higher commitment from node operators, while, at the same time, leveraging their loss aversion. On the other hand, collateral will have the disadvantage of increasing the entry barriers for node operators.
 
-:::warning
-:interrobang: Do we want to introduce the concept of collateral and staking? Would it make sense to have this only for L1s?
-:::
+Taking into account that this first iteration of the system aims to kick-start the network and learn how people will use (and misuse) Saturn, having low entry barriers seems to be more important. As such, we propose to **not have any collateral in the start** and reevaluate its need for future iterations.
 
 ### Service scoring functions
 
@@ -196,7 +194,7 @@ Thinking of L2 swarms as cache-extensions of their L1 nodes is a good analogy to
 With this in mind, the question to answer is how can we measure the contribution of L2 nodes to the service provided by their L1 node? When a request is submitted to an L1 node, there are two possibilities - either the L1 node has the content cached or it does not. If the content is cached, then the swarm has no contribution to the service. However, if the content is not cached, the L1 node will request the data to its swarm. The L2 nodes that have that content in cache will start sending it to the L1 node and, as such, a part of the rewards obtained from that request should be shared with the L2 operators that sent the content. The exact breakdown of how many rewards should be shared is still to be defined, but the service scoring function here should be simple (maybe consider only bandwidth?). 
 
 :::warning
-:interrobang: Can we think of any problems derived from rewarding L2s solely based on bandwidth?
+:interrobang: Can we think of any problems derived from rewarding L2s solely based on bandwidth? YES! We need to include TTFB and download speed!
 :::
 
 :::warning
@@ -207,7 +205,7 @@ With this in mind, the question to answer is how can we measure the contribution
 :warning: Another consideration here is whether we should pay L2s at all. Recall that Wilkins et al. [4] argued that financial incentives are not the main driver of participation in the commons and can sometimes worsen participation. Are there any other types of incentives we could offer instead? E.g., access to premium features or some sort of bragging items?
 :::
 
-## Simulating Saturn's "economy"
+## Simulating Saturn rewards
 
 :::info
 :hammer: WIP
@@ -278,7 +276,72 @@ This is a very relevant mechanism as we are incenting nodes to be good at all th
 
 ### Incentivizing honesty
 
-TBD
+When setting penalties for dishonesty, there are two main metrics that need to be considered - the true positive rate (i.e., the probability of a cheater being detected) and the false positive rate (i.e. the probability that an honest node is flagged as a cheater). Both of these metrics need to be estimated through known cases detected in the past.
+
+If we have these two metrics, then we can define bounds for the penalty adjustment applied to single nodes using two main assumptions:
+
+1. Upper bound assumption - the penalty should be large enough so that it is not economically advantageous to cheat. In other words, the expected reward of cheating (taking into account the probability of detection) needs to be negative.
+2. Lower bound assumption - the penalty should be small enough so that it does not hurt honest nodes considerably. In other words, the expected reward obtained by an honest node should be higher than a certain percentage of the total rewards.
+
+#### Deriving upper bound
+
+Given the following variables:
+
+- $R(m_i)$, the reward node $i$ receives for the service metric $m_i$.
+- $m^*_i$, the service metric for node $i$, including cheating. If there is no cheating, $m^*_i = m_i$.
+- $\alpha$, the true positive rate.
+- $p$, the penalty adjustment.
+
+Then, the upper bound assumption leads to the following equation:
+
+$$
+\begin{align*}
+   & E(r(m^*_i)) < 0 \Longleftrightarrow \\
+   & \Longleftrightarrow (1-\alpha)\cdot R(m^*_i) + \alpha \cdot p \cdot R(m^*_i) < 0 \Longleftrightarrow \\
+   & \Longleftrightarrow (1-\alpha) + \alpha \cdot p < 0 \Longleftrightarrow \\
+   & \Longleftrightarrow p < \frac{\alpha-1}{\alpha}
+\end{align*}
+$$
+
+Interestingly, this upper bound does not depend on $r(m_i)$ nor on $m^*_i-m_i$.
+
+#### Deriving upper bound
+
+Given the following variables:
+
+- $R(m_i)$, the reward node $i$ receives for the service metric $m_i$.
+- $\beta$, the false positive rate. It can be interpreted as the probability of an honest node being flagged.
+- $\tau$, the ratio of rewards that honest nodes should receive on average.
+- $p$, the penalty adjustment.
+
+Then, the lower bound assumption leads to the following equation:
+
+$$
+\begin{align*}
+   & E(r(m_i)) > \tau \cdot R(m_i) \Longleftrightarrow \\
+   & \Longleftrightarrow (1-\beta)\cdot R(m_i) + \beta \cdot p \cdot R(m_i) > \tau \cdot R(m_i) \Longleftrightarrow \\
+   & \Longleftrightarrow (1-\beta) + \beta \cdot p > \tau \Longleftrightarrow \\
+   & \Longleftrightarrow p > \frac{\tau + \beta - 1}{\beta}
+\end{align*}
+$$
+
+Note that once again this bound does not depend on $r(m_i)$ nor on $m^*_i-m_i$.
+
+#### Bounds estimation
+
+To arrive at the optimal values for the penalty adjustment, we computed the lower and upper bounds derived above, assuming a range of values for the true positive rate $\alpha$, the false positive rate $\beta$ and the minimum reward ratio $\tau$. The next plots show the values obtained:
+
+[add plots]
+
+As we can see, there is a limited window for the penalty adjustment that meets both bounds. In addition, the worse the detection system (i.e. the lower the true positive rate and the higher the false positive rate), the smaller this window is. In fact, these curves already give us some goals that we should meet with the detection system, namely, having a false positive rate lower than 5% and a true positive rate higher than 25%.
+
+Another consideration is that the penalty adjustment needs to be negative to meet the upper bound assumptions. This is intuitive since, were it not negative, dishonest nodes would always gain some money because no detection system will catch all the fake logs. However, this creates a problem in a situation where collateral is not required - if a node is flagged, and it is assigned a negative reward, where is that money coming from?
+
+A possible solution is to introduce some delay to rewards. When a node submits logs, a reward is computed and stored for some time. If, in the meantime, that nodes gets assigned a negative score, it will be deducted from the stored rewards. Finally, the rewards that "vest" at each day will be sent to the node, minus the penalties applied.
+
+:::info
+:hammer: Final suggestion: -4 seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate.
+:::
 
 ## References
 
