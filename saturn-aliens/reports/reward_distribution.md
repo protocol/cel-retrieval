@@ -22,7 +22,7 @@ Saturn is a decentralized content delivery network (CDN) for Filecoin. It aims t
 When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and an L2 node only connects to L1 nodes in its vicinity. If the L2 nodes have the desired content cached, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway or Filecoin's Storage Providers. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
 
 <div style="text-align:center">
-<img width="550" src="https://i.imgur.com/4RIDQEb.png">
+<img width="550" src="https://i.imgur.com/yx1rt1z.png">
 <br>
 <br>
 </div>
@@ -75,9 +75,9 @@ On the other hand, in a pool that is not pre-defined (i.e. variable), the total 
 1. Since Saturn is expected to be a content delivery market, having clients fund the network is the most straightforward way of building a sustainable flow of rewards.
 2. Since rewards will depend on the funding being brought into the network, all participants are incentivized to “sell” Saturn and contribute to its usage.
 
-However, a variable pool has the disadvantage of being less predicable, which can deter node operators to make big upfront investments. Another option is to have a hybrid pool that contains a pre-determined base component and a variable component. The base component would be funded by a fixed initial pool of Filecoin while the variable component would be funded by the new clients joining the network. This way, the base pool gives more predictability, whiles the variable pool encourages growth and adoption.
+However, a variable pool has the disadvantage of being less predicable, which can deter node operators to make big upfront investments. Another option is to have a **hybrid pool that contains a pre-determined base component and a variable component**. The base component would be funded by a fixed initial pool of Filecoin while the variable component would be funded by the new clients joining the network. This way, the base pool gives more predictability, whiles the variable pool encourages growth and adoption.
 
-Connected to this consideration is the definition of the payout window for the pool. For a given new inflow of funding to the reward pool, we need to define how the total funding will be split daily to pay rewards. Blockchains such as Bitcoin use an exponential decay model, where mining rewards get exponentially smaller with time. This model benefits early adopters so that the network achieves a faster growth at the start. Another option is to split the total funding equally throughout the duration of the client agreement, which would be the simplest approach. It is not clear what is the best approach here, so **this will be one of the features to test in the simulation**.
+Connected to this consideration is the definition of the **payout window for the pool**. For a given new inflow of funding to the reward pool, we need to define how the total funding will be split daily to pay rewards. Blockchains such as Bitcoin use an exponential decay model, where mining rewards get exponentially smaller with time. This model benefits early adopters so that the network achieves a faster growth at the start. Another option is to split the total funding equally throughout the duration of the client agreement, which would be the simplest approach. It is not clear what is the best approach here, so this is **still to be discussed with the team**.
 
 The third consideration is whether we should have a singe pool or whether it should be split. Splitting means that we would assign specific amounts of Filecoin to specific groups of nodes (L1 vs. L2s) or to specific incentives (e.g., speed and reliability).
 
@@ -189,17 +189,13 @@ It is not clear the best approach here and this is yet another feature we will t
 
 In the first section, we described how L1 and L2 nodes are expected to interact within Saturn. Running a L1 node is a more demanding operation than running a L2 node, both in terms of hardware requirements and service expectation. They are the ones serving requests directly to end-users and processing all the requests coming to Saturn. On the other hand, L2 nodes form swarms around single L1 nodes and serve as an extension of their cache. They are home machines, with low hardware requirements, that can go offline as they please.
 
-Thinking of L2 swarms as cache-extensions of their L1 nodes is a good analogy to set payouts. In a way, L2s contribute to the performance of L1 nodes. The larger the swarm, the faster the L1 node will deliver requests. As such, it makes sense for L1s to share the rewards they receive with their swarm. In particular, we can use the previous scoring functions to distribute rewards among L1 nodes. Then, based on how each L2 contributed to the service the L1s provided, a part of the rewards distributed will be passed on to the swarms.
+Thinking of L2 swarms as cache-extensions of their L1 nodes is a good analogy to set payouts. In a way, L2s contribute to the performance of L1 nodes. The larger and more performant the swarm, the better L1 nodes will be at delivering content. As such, it makes sense for L1s to share some of the rewards they receive with the swarms. In particular, we can use the previous scoring functions to distribute rewards among L1 nodes. Then, based on how each L2 contributed to the service the L1s provided, a part of the rewards distributed will be passed on to the swarms.
 
-With this in mind, the question to answer is how can we measure the contribution of L2 nodes to the service provided by their L1 node? When a request is submitted to an L1 node, there are two possibilities - either the L1 node has the content cached or it does not. If the content is cached, then the swarm has no contribution to the service. However, if the content is not cached, the L1 node will request the data to its swarm. The L2 nodes that have that content in cache will start sending it to the L1 node and, as such, a part of the rewards obtained from that request should be shared with the L2 operators that sent the content. The exact breakdown of how many rewards should be shared is still to be defined, but the service scoring function here should be simple (maybe consider only bandwidth?). 
+With this in mind, the question to answer is how can we measure the contribution of L2 nodes to the service provided by the L1 nodes? When a request is submitted to an L1 node, there are two possibilities - either the L1 node has the content cached or it does not. If the content is cached, then the swarm has no contribution to the service. However, if the content is not cached, the L1 node will request the data to its swarm. The L2 nodes that have that content in cache will start sending it to the L1 node and, as such, a part of the rewards obtained from that request should be shared with the L2 operators that sent the content.
 
-:::warning
-:interrobang: Can we think of any problems derived from rewarding L2s solely based on bandwidth? YES! We need to include TTFB and download speed!
-:::
+Therefore, we can use the share of bandwidth served from L1 nodes using cache to split the rewards between L2 and L1 nodes. If $R$ is the total reward to be distributed in a given epoch and $c$ is the ratio of bandwidth from L1s where the cache was used, then the total reward to be paid to L2 nodes will be $R^* = (1-c) \cdot \gamma \cdot R$. Note that we are not giving 100% of the rewards resulting from cache-miss requests to L2s since even in these requests, L1s have a very important role. As such, L2s only receive a part of those rewards encoded in the parameter $\gamma$.
 
-:::warning
-:interrobang: What happens if the L1 node needs to cache-miss to the IPFS gateway? If we use the bandwidth provided by L2s, in this case, the L1 node would not share any rewards with its swarm. However, in that case, are we not incentivizing L1s to cache-miss directly to the IPFS gateway?
-:::
+Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ among L2 nodes. An important note here is that uptime is not required for L2s and, as such, we can either lower their uptime threshold or remove the scoring function entirely.
 
 :::warning
 :warning: Another consideration here is whether we should pay L2s at all. Recall that Wilkins et al. [4] argued that financial incentives are not the main driver of participation in the commons and can sometimes worsen participation. Are there any other types of incentives we could offer instead? E.g., access to premium features or some sort of bragging items?
@@ -342,6 +338,10 @@ A possible solution is to introduce some delay to rewards. When a node submits l
 :::info
 :hammer: Final suggestion: -4 seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate.
 :::
+
+### Full simulation (with sample data)
+
+TBD
 
 ## References
 
