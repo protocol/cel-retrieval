@@ -119,7 +119,7 @@ More concretely, if we have $n$ nodes ($i=1, 2, ..., n$), an amount of rewards t
 Before detailing the scoring functions, we need to define the service metrics. In Saturn, service can be measured by three main metrics:
 
 1. Bandwidth — Number of bytes transferred from Saturn to its end users, in a given time-interval. This is the main metric we want to score as it encodes the network's “usage” and is the main driver of costs for node operators.
-2. Time-to-first-byte (TTFB) — one of the behaviors we wish to see in Saturn is a fast content delivery and, as such, the speed of the content delivery is an important incent vector. One way we can measure it is the TTFB recorded by the end-user, which the time between the request being sent and the first byte arriving. Note that since we do not yet collect logs from the end-users, we will need to estimate the average TTFB using a sample of requests performed by the orchestrator. In addition, the clients onboarded (aka the content publishers) will be able to collect TTFB, so we can also leverage their logs to estimate the average TTFB.
+2. Time-to-first-byte (TTFB) and total download time — one of the behaviors we wish to see in Saturn is a fast content delivery and, as such, the speed of the content delivery is an important incent vector. One way we can measure it is through the TTFB and total download time recorded by the end-user. Note that since we do not yet collect logs from the end-users, we will need to estimate the average TTFB and the download speed using a sample of requests performed by the orchestrator. In addition, the clients onboarded (aka the content publishers) will be able to collect both metrics, so we can also leverage their logs to estimate the average TTFB and download speed.
 3. Uptime — Reliability is another behavior we wish to see in Saturn. L1 nodes are expected to be online and, in case of failure, warn the network and fail gracefully. Another point here is that in rewarding uptime, we are, in a way, rewarding available service also. The previous two metrics focus on the actual service experienced by end-users, while uptime considers the nodes' availability to perform services for the network.
 
 :::warning
@@ -150,18 +150,18 @@ With a supra linear scoring function ($k > 1$), rewards increase faster than the
 It is not clear what the best value for $k$ is. Therefore, this will be a parameter we will tune during the simulation analysis.
 
 
-#### TTFB scoring function
+#### Download times scoring function
 
-For TTFB, we cannot directly use the functions we used for bandwidth. The reason is two-fold:
+For TTFB and download speed, we cannot directly use the functions we used for bandwidth. The reason is two-fold:
 
-1. Having a lower TTFB is a good thing, which means the scoring function needs to be monotonically decreasing on the TTFB
-2. Nodes may contribute both positively and negatively to the network's TTFB. In other words, if many nodes join the network with a high TTFB, they can lower the entire network performance. On the other hand, for bandwidth, nodes can only add more bandwidth, so they cannot negatively affect the network on that particular metric.
+1. Having lower download times is a good thing, which means the scoring function needs to be monotonically decreasing.
+2. Nodes may contribute both positively and negatively to the network's download times. In other words, if many nodes join the network with a high times, they can lower the entire network performance. On the other hand, for bandwidth, nodes can only add more bandwidth, so they cannot negatively affect the network on that particular metric.
 
-Another important consideration here is that a single request with a very low TTFB is not very valuable to the network in general. One can only say that Saturn delivers a *fast* service when a significant portion of node operators are *fast*. With this in mind, we are not interested in incentivizing single nodes to decrease their TTFB indefinitely, but instead we want the entire network to be better than a certain threshold of TTFB.
+Another important consideration here is that a single request with a very low speed is not very valuable to the network in general. One can only say that Saturn delivers a *fast* service when a significant portion of node operators are *fast*. With this in mind, we are not interested in incentivizing single nodes to decrease their download times indefinitely, but instead we want the entire network to be better than a certain threshold of each download time metric.
 
-One way to encode this incentive is to use the percentage of requests of a given node operator with a TTFB lower than a predefined threshold. With this new metric, we can use the exact same functions defined for bandwidth. At the same time, we avoid rewarding node operators on achieving a great TTFB on a few requests and, instead, reward by how much they can be better than the threshold.
+One way to encode this incentive is to use the percentage of requests of a given node operator with both TTFB and total download time lower than some predefined thresholds. With this new metric, we can use the exact same functions defined for bandwidth. At the same time, we avoid rewarding node operators on achieving great speeds on a few requests and, instead, reward by how many of their requests are better than the thresholds.
 
-Why do we use the percentage instead of the number of requests? If we chose the number of requests, we would be indirectly considering network usage in this incentive. Two node operators with a TTFB always bellow the threshold would receive different rewards solely based on the number of requests they served.
+Why do we use the percentage instead of the number of requests? If we chose the number of requests, we would be indirectly considering network usage in this incentive. Two node operators with speeds always bellow the thresholds would receive different rewards solely based on the number of requests they served.
 
 
 #### Uptime scoring function
@@ -209,7 +209,7 @@ Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ 
 
 ### Fair distribution of rewards (L1 nodes)
 
-The main goal of this analysis is to compare how different scoring functions impact the distribution of rewards among L1 node operators in a **single epoch**. Throughout the analysis we assume that we have 1000 L1 operators, and we generate their service metrics using specific statistical distributions. The plots bellow show the histograms for the three service metrics generated - total bandwidth, % of requests above a speed threshold (which can be TTFB, download speed or both), and uptime percentage.
+The main goal of this analysis is to compare how different scoring functions impact the distribution of rewards among L1 node operators in a **single epoch**. Throughout the analysis we assume that we have 1000 L1 operators, and we generate their service metrics using specific statistical distributions. The plots below show the histograms for the three service metrics generated - total bandwidth, % of requests simultaneously above the speed thresholds (i.e. TTFB and download time), and uptime percentage.
 
 | ![](https://i.imgur.com/buTtSZ8.png) | ![](https://i.imgur.com/aDP8SXA.png) | ![](https://i.imgur.com/0nHGvle.png) |
 | ------------------------------------ | ------------------------------------ | ------------------------------------ |
