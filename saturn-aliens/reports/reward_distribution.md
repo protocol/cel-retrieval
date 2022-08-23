@@ -22,7 +22,7 @@ Saturn is a decentralized content delivery network (CDN) for Filecoin. It aims t
 When a user visits a website using Saturn's CDN, a request for content is submitted Saturn. The network routes the request to an L1 node, who becomes responsible for serving that request. If the L1 node has the content cached, they can simply send the content to the user. If not, they will send a request to a group of L2 nodes close-by. The entire set of L2 nodes connected to a given L1 node are its “swarm” and an L2 node only connects to L1 nodes in its vicinity. If the L2 nodes have the desired content cached, they will send it to the L1 node, which in turn will send it to the original user. If none of the L2 nodes have the content, the L1 node will cache miss to the IPFS gateway or Filecoin's Storage Providers. In the end, the L1 and L2 nodes will send logs of these interactions to Saturn's central orchestrator and will be paid by Saturn accordingly.
 
 <div style="text-align:center">
-<img width="550" src="https://i.imgur.com/yx1rt1z.png">
+<img width="550" src="https://i.imgur.com/EfzABhY.png">
 <br>
 <br>
 </div>
@@ -128,7 +128,7 @@ Before detailing the scoring functions, we need to define the service metrics. I
 
 #### Bandwidth scoring function
 
-When scoring bandwidth, the higher the bandwidth, the larger the share of rewards should be. Thus, not only the scoring function needs to meet criteria define above, but it also needs to be monotonically increasing. We can achieve this using a polynomial of the bandwidth fraction. More concretely, if we have:
+When scoring bandwidth, the higher the bandwidth, the larger the share of rewards should be. Thus, not only the scoring function needs to meet criteria defined above, but it also needs to be strictly monotonically increasing. We can achieve this using a positive power of the bandwidth fraction. More concretely, if we have:
 
 - $n$ node operators ($i=1, 2, ..., n$)
 - $b_i$: total bandwidth served by node operator $i$ in the current epoch
@@ -147,7 +147,7 @@ Where $k \in \mathbb{R}^+$ is any real positive value. Although simple, this for
 
 With a supra linear scoring function ($k > 1$), rewards increase faster than the share of bandwidth contributed. This incents operators to rump up their service since they get increasingly more rewards by increasing the bandwidth they service. On the other hand, with a sublinear function ($k<1$), the share of rewards increases slower than the share of bandwidth provided. This incents a higher distribution of rewards since it gets ever harder to get a bigger share of rewards by serving more bandwidth.
 
-It is not clear what the best value for $k$ is. Therefore, this will be a parameter we will tune during the simulation analysis.
+It is not clear what the optimal value for $k$ is. Therefore, this will be a parameter we will tune during the simulation analysis.
 
 
 #### Download times scoring function
@@ -189,11 +189,11 @@ It is not clear the best approach here and this is yet another feature we will t
 
 In the first section, we described how L1 and L2 nodes are expected to interact within Saturn. Running a L1 node is a more demanding operation than running a L2 node, both in terms of hardware requirements and service expectation. They are the ones serving requests directly to end-users and processing all the requests coming to Saturn. On the other hand, L2 nodes form swarms around single L1 nodes and serve as an extension of their cache. They are home machines, with low hardware requirements, that can go offline as they please.
 
-Thinking of L2 swarms as cache-extensions of their L1 nodes is a good analogy to set payouts. In a way, L2s contribute to the performance of L1 nodes. The larger and more performant the swarm, the better L1 nodes will be at delivering content. As such, it makes sense for L1s to share some of the rewards they receive with the swarms. In particular, we can use the previous scoring functions to distribute rewards among L1 nodes. Then, based on how each L2 contributed to the service the L1s provided, a part of the rewards distributed will be passed on to the swarms.
+Thinking of L2 swarms as cache-extensions of their L1 nodes is a good analogy to set payouts. In a way, L2s contribute to the performance of L1 nodes. The larger and more performant the swarm, the better L1 nodes will be at delivering content. As such, it makes sense for L1s to share some of the rewards they receive with the swarms. In particular, we can use the previous scoring functions to distribute rewards among L1 nodes. Then, based on how much each L2 contributed to the service the L1s provided, a part of the rewards distributed will be passed on to the swarms.
 
 With this in mind, the question to answer is how can we measure the contribution of L2 nodes to the service provided by the L1 nodes? When a request is submitted to an L1 node, there are two possibilities - either the L1 node has the content cached or it does not. If the content is cached, then the swarm has no contribution to the service. However, if the content is not cached, the L1 node will request the data to its swarm. The L2 nodes that have that content in cache will start sending it to the L1 node and, as such, a part of the rewards obtained from that request should be shared with the L2 operators that sent the content.
 
-Therefore, we can use the share of bandwidth served from L1 nodes using cache to split the rewards between L2 and L1 nodes. If $R$ is the total reward to be distributed in a given epoch and $c$ is the ratio of bandwidth from L1s where the cache was used, then the total reward to be paid to L2 nodes will be $R^* = (1-c) \cdot \gamma \cdot R$. Note that we are not giving 100% of the rewards resulting from cache-miss requests to L2s since even in these requests, L1s have a very important role. As such, L2s only receive a part of those rewards encoded in the parameter $\gamma$.
+Therefore, we can use the share of bandwidth served from L1 nodes using cache to split the rewards between L2 and L1 nodes. If $R$ is the total reward to be distributed in a given epoch and $c$ is the ratio of bandwidth from L1s where the cache was used, then the total reward to be paid to L2 nodes will be $R^* = (1-c) \cdot \gamma \cdot R$, for $\gamma \in [0,1]$. Note that we are not giving 100% of the rewards resulting from cache-miss requests to L2s since even in these requests, L1s have a very important role. As such, L2s only receive a part of those rewards encoded in the parameter $\gamma$.
 
 Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ among L2 nodes. An important note here is that uptime is not required for L2s and, as such, we can either lower their uptime threshold or remove the scoring function entirely.
 
@@ -209,7 +209,7 @@ Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ 
 
 ### Fair distribution of rewards (L1 nodes)
 
-The main goal of this analysis is to compare how different scoring functions impact the distribution of rewards among L1 node operators in a **single epoch**. Throughout the analysis we assume that we have 1000 L1 operators, and we generate their service metrics using specific statistical distributions. The plots below show the histograms for the three service metrics generated - total bandwidth, % of requests simultaneously above the speed thresholds (i.e. TTFB and download time), and uptime percentage.
+The main goal of this analysis is to compare how different scoring functions impact the distribution of rewards among L1 node operators in a **single epoch**. Throughout the analysis we assume that we have 1000 L1 operators, and we generate their service metrics using specific statistical distributions. The plots below show the histograms for the three service metrics generated - total bandwidth, ratio of requests simultaneously above the speed thresholds (i.e. TTFB and download time), and uptime percentage.
 
 | ![](https://i.imgur.com/buTtSZ8.png) | ![](https://i.imgur.com/aDP8SXA.png) | ![](https://i.imgur.com/0nHGvle.png) |
 | ------------------------------------ | ------------------------------------ | ------------------------------------ |
@@ -258,7 +258,7 @@ There is another different in the dynamics between the linear combinations and t
 
 Once again, we confirm the effect of the exponent $k$ on the rewards' distribution - the share of rewards grows faster than the share of bandwidth in supra linear functions, while the reserve happens in the sublinear functions.
 
-However, the interesting observation here is how much the linear functions smooth-out poor performances in the other metrics besides bandwidth. The effect is most accentuated in the all supra-linear scoring function, which a lower performance in either download speed or uptime leading to a significant decrease in rewards. 
+However, the interesting observation here is how much the linear functions smooth-out poor performances in the other metrics besides bandwidth. In other words, the drop in rewards a node gets by a bad performance in speed and/or uptime is much lower with the linear functions than the direct multiplication functions. The effect is most accentuated in the all supra-linear scoring function, which a lower performance in either download speed or uptime leading to a significant decrease in rewards. 
 
 This is a very relevant mechanism as we are incenting nodes to be good at all the metrics and, at the same, penalizing heavily any decrease in performance. Note that the bandwidth smooth follows the same trend as the all linear, but since the speed and uptime metrics get a sublinear exponent, the "penalty" for poor performance is smoothed.
 
@@ -327,7 +327,8 @@ Note that once again this bound does not depend on $r(m_i)$ nor on $m^*_i-m_i$.
 
 To arrive at the optimal values for the penalty adjustment, we computed the lower and upper bounds derived above, assuming a range of values for the true positive rate $\alpha$, the false positive rate $\beta$ and the minimum reward ratio $\tau$. The next plots show the values obtained:
 
-[add plots]
+| ![](https://i.imgur.com/iIpMlqe.png) | ![](https://i.imgur.com/KABj7Fd.png) |
+| ------------------------------------ | ------------------------------------ |
 
 As we can see, there is a limited window for the penalty adjustment that meets both bounds. In addition, the worse the detection system (i.e. the lower the true positive rate and the higher the false positive rate), the smaller this window is. In fact, these curves already give us some goals that we should meet with the detection system, namely, having a false positive rate lower than 5% and a true positive rate higher than 25%.
 
