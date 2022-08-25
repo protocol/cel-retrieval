@@ -221,9 +221,23 @@ Some notes:
 
 ## Annex
 
+### Saturn architecture
+
 ![](https://i.imgur.com/iThGfgp.png)
 <div style="text-align:center">
 <em>Saturn M1 architecture</em>
 </div>
 
+### ARC payout pipeline
 
+1. Nodes send property session and p2p transfer reports to the log ingestor. Property session reports are how long a node was on a given website and p2p transfer reports are how much data was sent from one node to another.
+2. Log ingestor sanity checks, but does not perform fraud detection, on these reports. Sanity checked reports are written to google BigQuery.
+3. Once a day, every day, the bookkeeper runs. The bookkeeper is a python script that runs through all the logs in BigQuery and:
+   1. Does basic fraud detection. Irregular reports are dropped
+   2. After fraud detection, calculates earnings + charges and writes those calculation results to a separate BigQuery table
+   3. Issues payouts and charges customers based on the results of the above calculations.
+   4. The bookkeeper writes results to a table:
+      1. to leave a paper trail, and 
+      2. so payouts and charges can be re-run in the future if things break or fail for any reason
+4. The bookkeeper submits payouts to PayPal and sites get paid. If the bookkeeper already paid out a given site for a day (based on non-null db records), that site won't get paid again. This allows us to re-run the bookkeeper at any time to issue any outstanding, or failed, payments.
+5. The bookkeeper submits charges to stripe and customers get charged.
