@@ -5,6 +5,8 @@ description: Design and analysis of Saturn's logs detection module
 breaks: false
 ---
 
+[![hackmd-github-sync-badge](https://hackmd.io/WihFXzN9QteSwIxHW5zKeQ/badge)](https://hackmd.io/WihFXzN9QteSwIxHW5zKeQ)
+
 # Saturn's log detection module
 
 #### Maria Silva, September 2022
@@ -74,11 +76,6 @@ The next table describes all the heuristics proposed to be included in the detec
 Almost all the heuristics proposed have a threshold that needs to be set or tuned. This threshold depends on a single metric that we are comparing against. For instance, in the *fast requests* heuristic, the metric is the request duration. 
 
 We can interpret this problem as a search for univariate anomalies. In the case of the *fast requests* heuristic, we are interested in data points that are too low for the *"normal"* data distribution. Here, the threshold is the point below which we consider a data point *"abnormal"*.
-
-To tune the threshold, 
-
-* [Grubb's Test](https://en.wikipedia.org/wiki/Grubbs%27s_test) - assumes normal distribution
-* [StackExchange question](https://stats.stackexchange.com/questions/129274/outlier-detection-on-skewed-distributions)
 
 ## Multivariate anomaly detection
 
