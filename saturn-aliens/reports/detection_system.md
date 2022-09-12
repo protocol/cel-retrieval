@@ -77,13 +77,14 @@ Almost all the heuristics proposed have a threshold that needs to be set or tune
 
 We can interpret this problem as a search for univariate anomalies. In the case of the *fast requests* heuristic, we are interested in data points that are too low for the *"normal"* data distribution. Here, the threshold is the point below which we consider a data point *"abnormal"*.
 
-In this document, we do not share the final threshold of each heuristic. If we did, the heuristic would be very easy to cheat! Instead, we discuss the process of getting to the final thresholds.
+In this document, we do not share the final threshold of each heuristic. If we did, the heuristic would be very easy to cheat! Instead, we discuss the process of getting to the final thresholds. In particular, we use two distinct methods, namely:
 
-To each heuristic, we collect a sample of the underlying metric, using the data from the test version of Saturn. This version is running with internal nodes. This is means that the observed metrics from real users are likely to be slightly different. However, this is the best approximation we have at the moment.
+1. **Expert judgment:** here we use our knowledge of how Saturn and real requests work to set the threshold. This is mostly used in heuristics where we can easily define what is *impossible*.
+2. **Statistical outliers:** here we use data from the test version of Saturn to model the statistical distribution of the underlying metric. Thus, we assume that the data follows a known distribution and that it will be representative of future requests. This test version is running with internal nodes, which means that the observed metrics from real users may be slightly different. However, this is the best approximation we have at the moment. Once we have the distribution for the metric, we set the percentile 99.999 or 0.0001 (1/10000) of the fitted distribution as the threshold candidate.
 
-From this sample, we fit a statistical distribution. We tested all the continuous distributions from [scipy](https://docs.scipy.org/doc/scipy/tutorial/stats/continuous.html#continuous-distributions-in-scipy-stats) and picked the one with the lowest [sum of squared residuals (SSR)](https://en.wikipedia.org/wiki/Residual_sum_of_squares). Finally, we picked the percentile 99.9 of the fitted distribution as the threshold candidate.
+It is important to note that, in statistical outliers' method, we test all the continuous distributions from [scipy](https://docs.scipy.org/doc/scipy/tutorial/stats/continuous.html#continuous-distributions-in-scipy-stats) and pick the one with the lowest [sum of squared residuals (SSR)](https://en.wikipedia.org/wiki/Residual_sum_of_squares).
 
-It is important to note that, in some heuristics, we don't have enough data to fit a distribution (namely the two doctored content heuristics). In these cases, we assume a Gaussian distribution and use the classical threshold for a normal distribution - $\mu + 3 \sigma$.
+Also, in some heuristics, we don't have enough data to fit a distribution (namely the two doctored content heuristics). In these cases, we assume a Gaussian distribution and use the classical threshold for a normal distribution - $\mu + 3 \sigma$.
 
 
 ## Multivariate anomaly detection
