@@ -84,7 +84,7 @@ In this document, we do not share the final threshold of each heuristic. If we d
 
 It is important to note that, in statistical outliers' method, we test all the continuous distributions from [scipy](https://docs.scipy.org/doc/scipy/tutorial/stats/continuous.html#continuous-distributions-in-scipy-stats) and pick the one with the lowest [sum of squared residuals (SSR)](https://en.wikipedia.org/wiki/Residual_sum_of_squares).
 
-Also, in some heuristics, we don't have enough data to fit a distribution (namely the two doctored content heuristics). In these cases, we assume a Gaussian distribution and use the classical threshold for a normal distribution - $\mu + 3 \sigma$.
+Also, in some heuristics, we don't have enough data to fit a distribution (namely the two doctored content heuristics). In these cases, we assume a Gaussian distribution and use the classical threshold for a normal distribution - $\mu + 4 \sigma$.
 
 
 ## Multivariate anomaly detection
