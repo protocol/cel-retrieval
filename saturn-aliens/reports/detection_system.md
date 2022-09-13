@@ -27,9 +27,9 @@ As a decentralized content delivery network (CDN), Saturn relies on the particip
 
 Since there are no feasible solutions for trustless verification of content delivery, we cannot assume that the data Saturn receives from its operator nodes is correct. These logs can be doctored, either by hacking Saturn's code to directly edit the logs or by using a bot to make "fake" requests. 
 
-If we didn't have a detection system in place (together with penalties in case of detection), there would be a clear incentive for "rogue" nodes to cheat the system and steal rewards from other honest participants.
+If we didn't have a detection system in place (together with penalties in case of detection), there would be a clear incentive for "rogue" nodes to cheat the system and steal rewards from other honest participants. Thus, Saturn's log detection module aims to solve this problem by finding and flagging doctored or fake logs submitted by node operators.
 
-Thus, Saturn's log detection module aims to solve this problem by finding and flagging doctored or fake logs submitted by node operators. 
+There are also attack vectors on the side of the orchestrator and the client websites. For instance, client websites can lie about the requests being served to reduce how much they are paying for Saturn's service, while node operators can "fake" their perceived performance to the orchestrator by answering to the orchestrator differently from real users. However, these attack vectors are not the major concern for the first version of Saturn and, therefore, they will be addressed in later versions.
 
 ## Design overview
 
@@ -51,10 +51,6 @@ In addition to this behavior-based detection approach, detection can also be don
 :::
 
 ## Heuristics
-
-:::info
-:hammer: WIP
-:::
 
 Heuristics are defined as simple rules that encode a specific behavior we are trying to avoid. In this module, we will have heuristics for the two levels described before - requests and operators.
 
