@@ -21,10 +21,6 @@ As a decentralized content delivery network (CDN), Saturn relies on the particip
 2. Operator nodes: every time an operator node processes a request, they will log the request (along with some related stats) and send it to the orchestrator.
 3. Client websites: content publishers using Saturn to accelerate their online distribution will have Saturn code running in their applications, which will log metrics about each user accessing their content. Note that this data will only be available after Saturn onboards clients to network.
 
-:::warning
-:warning: Can we think of ways in which node operators can game the data coming from the orchestrator? In other words, can the download speed and uptime performance metrics be gamed?
-:::
-
 Since there are no feasible solutions for trustless verification of content delivery, we cannot assume that the data Saturn receives from its operator nodes is correct. These logs can be doctored, either by hacking Saturn's code to directly edit the logs or by using a bot to make "fake" requests. 
 
 If we didn't have a detection system in place (together with penalties in case of detection), there would be a clear incentive for "rogue" nodes to cheat the system and steal rewards from other honest participants. Thus, Saturn's log detection module aims to solve this problem by finding and flagging doctored or fake logs submitted by node operators.
