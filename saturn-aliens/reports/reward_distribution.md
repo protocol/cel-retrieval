@@ -9,7 +9,7 @@ breaks: false
 
 # Reward distribution for Saturn
 
-#### Maria Silva, August 2022
+#### Maria Silva and Amean Asad, September 2022
 
 In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@msilvaPL/r1YWCz4j9).
 
@@ -166,9 +166,18 @@ Why do we use the percentage instead of the number of requests? If we chose the 
 
 #### Uptime scoring function
 
-:::info
-:hammer: Need to check with Saturn team what exact data we can use to measure this!!
-:::
+We currently have a table called `health_check_failures` that stores data on "downtime" events from nodes. Every minute, the orchestrator sends a health check to every node and stores the results. Nodes that fail the health check are logged to the `health_check_failures` table. 
+
+We can get an estimate of downtime from this information. The proposal is to compute the percentage of health check failures per given amount of time. Let $d_i$ represent the health check failure percentage for node $i$. We define $u_i = 1 - d_i$ as the uptime estimate for node $i$. 
+
+To give an example, let's assume we run our payments every hour. For every hour we have 60 health checks (1 per min). If node $k$ failed 20 health checks, then:
+
+$$
+d_k = \frac{20}{60} = \frac{1}{3} \\
+\implies u_k = 1 - d_k = \frac{2}{3}
+$$
+
+It is important to note that this method gives only an estimate of uptime. It is also aggressive with how it penalizes nodes for downtime because it assumes that if a node fails a health check then it must be down for a whole minute. In addition, it will miss downtime events that happen between health checks.
 
 #### Combining scoring functions
 
@@ -292,14 +301,14 @@ Then, the upper bound assumption leads to the following equation:
 
 $$
 \begin{align*}
-   & E(r(m^*_i)) < 0 \Longleftrightarrow \\
+   & E(R(m^*_i)) < 0 \Longleftrightarrow \\
    & \Longleftrightarrow (1-\alpha)\cdot R(m^*_i) + \alpha \cdot p \cdot R(m^*_i) < 0 \Longleftrightarrow \\
    & \Longleftrightarrow (1-\alpha) + \alpha \cdot p < 0 \Longleftrightarrow \\
    & \Longleftrightarrow p < \frac{\alpha-1}{\alpha}
 \end{align*}
 $$
 
-Interestingly, this upper bound does not depend on $r(m_i)$ nor on $m^*_i-m_i$.
+Interestingly, this upper bound does not depend on $R(m_i)$ nor on $m^*_i-m_i$.
 
 #### Deriving upper bound
 
@@ -314,14 +323,14 @@ Then, the lower bound assumption leads to the following equation:
 
 $$
 \begin{align*}
-   & E(r(m_i)) > \tau \cdot R(m_i) \Longleftrightarrow \\
+   & E(R(m_i)) > \tau \cdot R(m_i) \Longleftrightarrow \\
    & \Longleftrightarrow (1-\beta)\cdot R(m_i) + \beta \cdot p \cdot R(m_i) > \tau \cdot R(m_i) \Longleftrightarrow \\
    & \Longleftrightarrow (1-\beta) + \beta \cdot p > \tau \Longleftrightarrow \\
    & \Longleftrightarrow p > \frac{\tau + \beta - 1}{\beta}
 \end{align*}
 $$
 
-Note that once again this bound does not depend on $r(m_i)$ nor on $m^*_i-m_i$.
+Note that once again this bound does not depend on $R(m_i)$ nor on $m^*_i-m_i$.
 
 #### Bounds estimation
 
