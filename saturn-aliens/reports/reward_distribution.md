@@ -1,6 +1,6 @@
 ---
 title: Reward distribution for Saturn
-tags: Saturn aliens
+tags: Saturn aliens, Retrievals
 description: Analysis of different options for distributing rewards in Saturn
 breaks: false
 ---
@@ -11,7 +11,7 @@ breaks: false
 
 #### Maria Silva and Amean Asad, September 2022
 
-In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@msilvaPL/r1YWCz4j9).
+In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@cryptoecon/SJIJEUJbs/%2FmGKG1Iz-RRmbMzsAX468iQ).
 
 We start with a summary of similar work and projects. Then, we discuss all the options and technical details of how to design the reward distribution for Saturn. We conclude the report with an empirical analysis of the options and how they may influence honesty and service [This last part is still WIP!!].
 
@@ -123,7 +123,7 @@ Before detailing the scoring functions, we need to define the service metrics. I
 3. Uptime — Reliability is another behavior we wish to see in Saturn. L1 nodes are expected to be online and, in case of failure, warn the network and fail gracefully. Another point here is that in rewarding uptime, we are, in a way, rewarding available service also. The previous two metrics focus on the actual service experienced by end-users, while uptime considers the nodes' availability to perform services for the network.
 
 :::warning
-:warning: there is another behavior we are not discussing here - geographical coverage. Incentivizing certain regions by providing bigger rewards would be more easily addressed using multiple pools. Could this be something to tackle in later versions, once we have a clearer idea of where the users and node operators are located?
+:warning: there is another behavior we are not discussing here - geographical coverage. Incentivizing certain regions by providing bigger rewards would be more easily addressed using multiple pools. This will be something to tackle in later versions, once we have a clearer idea of where the users and node operators are located.
 :::
 
 #### Bandwidth scoring function
@@ -211,10 +211,6 @@ Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ 
 :::
 
 ## Simulating Saturn rewards
-
-:::info
-:hammer: WIP
-:::
 
 ### Fair distribution of rewards (L1 nodes)
 
@@ -351,7 +347,9 @@ A possible solution is to introduce some delay to rewards. When a node submits l
 
 ### Full simulation (with sample data)
 
-TBD
+:::info
+:hammer: WIP
+:::
 
 ## References
 
