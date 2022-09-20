@@ -281,68 +281,76 @@ When setting penalties for dishonesty, there are two main metrics that need to b
 
 If we have these two metrics, then we can define bounds for the penalty adjustment applied to single nodes using two main assumptions:
 
-1. Upper bound assumption - the penalty should be large enough so that it is not economically advantageous to cheat. In other words, the expected reward of cheating (taking into account the probability of detection) needs to be negative.
-2. Lower bound assumption - the penalty should be small enough so that it does not hurt honest nodes considerably. In other words, the expected reward obtained by an honest node should be higher than a certain percentage of the total rewards.
+1. Lower bound assumption - the penalty should be large enough so that it is not economically advantageous to cheat. In other words, the expected reward of cheating (taking into account the probability of detection) needs to be negative.
+2. Upper bound assumption - the penalty should be small enough so that it does not hurt honest nodes considerably. In other words, the expected reward obtained by an honest node should be higher than a certain percentage of the total rewards.
 
-#### Deriving upper bound
+#### Deriving lower bound
 
 Given the following variables:
 
-- $R(m_i)$, the reward node $i$ receives for the service metric $m_i$.
-- $m^*_i$, the service metric for node $i$, including cheating. If there is no cheating, $m^*_i = m_i$.
-- $\alpha$, the true positive rate.
-- $p$, the penalty adjustment.
+- $R_t$, the reward a cheating node receives at payout time $t$, before any penalty is applied.
+- $\alpha$, the true positive rate of the log detection system (we are assuming this rate is stable through time). It can be interpreted as the probability of a cheating node being flagged.
+- $P$, the penalty in case of detection.
+- $n$, the number of past payouts at payout time $t$.
 
-Then, the upper bound assumption leads to the following equation:
+Then, the lower bound assumption requires that the expected reward of cheating be negative, which leads to the following inequality:
+
 
 $$
 \begin{align*}
-   & E(R(m^*_i)) < 0 \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\alpha)\cdot R(m^*_i) + \alpha \cdot p \cdot R(m^*_i) < 0 \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\alpha) + \alpha \cdot p < 0 \Longleftrightarrow \\
-   & \Longleftrightarrow p < \frac{\alpha-1}{\alpha}
+   & \sum_{t=1}^n \bigg( (1-\alpha)\cdot R_t + \alpha (R_t - P) \bigg) < 0  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n \bigg(R_t - \alpha \cdot P \bigg) < 0  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n R_t - \alpha \cdot n \cdot P < 0  \Longleftrightarrow\\
+   & \Longleftrightarrow P > \frac{1}{\alpha} \cdot \frac{\sum_{t=1}^n R_t}{n}
 \end{align*}
 $$
 
-Interestingly, this upper bound does not depend on $R(m_i)$ nor on $m^*_i-m_i$.
+In other words, the penalty needs to be larger that $1 / \alpha$ times the average reward of the node (before penalties).
 
 #### Deriving upper bound
 
 Given the following variables:
 
-- $R(m_i)$, the reward node $i$ receives for the service metric $m_i$.
-- $\beta$, the false positive rate. It can be interpreted as the probability of an honest node being flagged.
+- $R_t$, the reward an honest node receives at payout time $t$, before any penalty is applied.
+- $\beta$, the false positive rate of the log detection system (we are assuming this rate is stable through time). It can be interpreted as the probability of an honest node being flagged.
 - $\tau$, the ratio of rewards that honest nodes should receive on average.
-- $p$, the penalty adjustment.
+- $P$, the penalty in case of detection.
+- $n$, the number of past payouts at payout time $t$.
 
-Then, the lower bound assumption leads to the following equation:
+Then, the upper bound assumption requires that the expected reward of honest node be above $\tau$ times the rewards before penalties, which leads to the following inequality:
 
 $$
 \begin{align*}
-   & E(R(m_i)) > \tau \cdot R(m_i) \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\beta)\cdot R(m_i) + \beta \cdot p \cdot R(m_i) > \tau \cdot R(m_i) \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\beta) + \beta \cdot p > \tau \Longleftrightarrow \\
-   & \Longleftrightarrow p > \frac{\tau + \beta - 1}{\beta}
+   & \sum_{t=1}^n \bigg( (1-\beta)\cdot R_t + \beta (R_t - P) \bigg) > \tau \sum_{t=1}^n R_t  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n \bigg(R_t - \beta \cdot P \bigg) > \tau \sum_{t=1}^n R_t  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n R_t - \beta \cdot n \cdot P > \tau \sum_{t=1}^n R_t  \Longleftrightarrow\\
+   & \Longleftrightarrow P < \frac{1-\tau}{\beta} \cdot \frac{\sum_{t=1}^n R_t}{n}\\
 \end{align*}
 $$
 
-Note that once again this bound does not depend on $R(m_i)$ nor on $m^*_i-m_i$.
+In other words, the penalty needs to be smaller that $(1-\tau) / \beta$ times the average reward of the node (before penalties).
 
 #### Bounds estimation
 
-To arrive at the optimal values for the penalty adjustment, we computed the lower and upper bounds derived above, assuming a range of values for the true positive rate $\alpha$, the false positive rate $\beta$ and the minimum reward ratio $\tau$. The next plots show the values obtained:
+In this section, we plot the *penalty adjustment* derived above, assuming a range of values for the true positive rate $\alpha$, the false positive rate $\beta$ and the minimum reward ratio $\tau$. Note that the *penalty adjustment* is a fixed number to be multiplied by each node's average reward (excluding penalties).
 
-| ![](https://i.imgur.com/iIpMlqe.png) | ![](https://i.imgur.com/KABj7Fd.png) |
-| ------------------------------------ | ------------------------------------ |
+The next plots show the values obtained:
+
+| ![](https://hackmd.io/_uploads/ByWBrCLWs.png) | ![](https://hackmd.io/_uploads/rk-Pr0UZj.png) |
+| --------------------------------------------- | --------------------------------------------- |
 
 As we can see, there is a limited window for the penalty adjustment that meets both bounds. In addition, the worse the detection system (i.e. the lower the true positive rate and the higher the false positive rate), the smaller this window is. In fact, these curves already give us some goals that we should meet with the detection system, namely, having a false positive rate lower than 5% and a true positive rate higher than 25%.
 
-Another consideration is that the penalty adjustment needs to be negative to meet the upper bound assumptions. This is intuitive since, were it not negative, dishonest nodes would always gain some money because no detection system will catch all the fake logs. However, this creates a problem in a situation where collateral is not required - if a node is flagged, and it is assigned a negative reward, where is that money coming from?
+Another consideration is that the penalty needs to be bigger than 1 (i.e. needs to be bigger than the average reward per payout). This is intuitive since, were it not the case, dishonest nodes would always gain some money because no detection system will catch all the fake logs. However, this creates a problem in a situation where collateral is not required - if a node is flagged, and it is assigned a negative reward, where is that money coming from?
 
-A possible solution is to introduce some delay to rewards. When a node submits logs, a reward is computed and stored for some time. If, in the meantime, that nodes gets assigned a negative score, it will be deducted from the stored rewards. Finally, the rewards that "vest" at each day will be sent to the node, minus the penalties applied.
+A possible solution is to introduce some delay to rewards. When a node submits logs, a reward is computed and stored for some time. If, in the meantime, that nodes gets assigned a penalty, it will be deducted from the stored rewards. Finally, the rewards that "vest" at each day will be sent to the node, minus the penalties applied. Therefore, at each point in time, all nodes have money "at stake" that can be slashed to cover for penalties.
 
 :::info
-:hammer: Final suggestion: -4 seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate.
+:hammer: Final suggestion: 5 times the average reward per payout seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate (20%).
+:::
+
+:::warning
+:warning: We still need to check whether the payout frequency impacts the long-term aggregated penalties
 :::
 
 ### Full simulation (with sample data)
