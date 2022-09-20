@@ -84,7 +84,7 @@ Nodes leaving the network degrade the network performance and experience for use
 
 As such, we want to introduce a mechanism for nodes to gracefully tell the network they will be going offline. If a node goes offline not gracefully, we need to penalize the node. If it goes offline gracefully, we still want to penalize it, although less than going ungracefully.
 
-We can currently extract the uptime data of each station from the orchestrator. This is trusted data since the service is operated centrally and the data is not reported by nodes.
+We can currently extract the uptime data of each node from the orchestrator. This is trusted data since the service is operated centrally and the data is not reported by nodes.
 
 ### Bad behaviors
 
@@ -114,7 +114,7 @@ After Saturn is launched and more data is collected, we plan to iterate on this 
 Independently of the detection method, when we talk about fraudulent behavior, there are two separate levels at which we can detect it:
 
 1. **Request level:** Level where we look at individual logs, which corresponds to detecting specific requests that do not look legitimate. An example here would be a request that has an impossibly fast duration. At this level, we screen all the individual requests coming from the logs service and flag any that look suspicious. The output is a list of flagged requests and the origin of their flags.
-2. **Station level:** Level where we do not pinpoint a specific log that looks fraudulent but, instead, we look at the general behavior of individual node operators. An example here would be a node operator that is logging an impossibly high number of requests. At this level, we aggregated the raw logs for each operator and flag any that looks suspicious. The output is a list of flagged operators and the origin of their flags.
+2. **Operator level:** Level where we do not pinpoint a specific log that looks fraudulent but, instead, we look at the general behavior of individual node operators. An example here would be a node operator that is logging an impossibly high number of requests. At this level, we aggregated the raw logs for each operator and flag any that looks suspicious. The output is a list of flagged operators and the origin of their flags.
 
 ### Heuristics
 
