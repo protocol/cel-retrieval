@@ -31,7 +31,7 @@ The diagram below illustrates the structure of the Treasure service:
 </div>
 
 
-The Treasury receives data from the [logs service](https://www.notion.so/pl-strflt/Logs-service-d52cb0fd0bff4c3392fc765720d10b81) and begins by processing it in the log detection module. The fraud detection module is responsible for flagging the logs and operators that look suspicious and sending these flagged entities to the reward distribution module.
+The Treasury receives data from the [logs service](https://www.notion.so/pl-strflt/Logs-service-d52cb0fd0bff4c3392fc765720d10b81) and begins by processing it in the log detection module. The log detection module is responsible for flagging the logs and operators that look suspicious and sending these flagged entities to the reward distribution module.
 
 The approach for the log detection module will be to start with simple detection techniques (e.g. heuristics and simple anomaly detection). Then, as we collect more data from Saturn and gain experience from real users, we will iterate and improve the detection model.
 
