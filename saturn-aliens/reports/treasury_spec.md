@@ -149,7 +149,7 @@ More details about the final reward distribution functions and their impact on r
 
 ### Saturn architecture
 
-![](https://i.imgur.com/iThGfgp.png)
+![](https://github.com/protocol/cel-retrieval/blob/master/saturn-aliens/reports/images/saturn_arch.png?raw=true)
 <div style="text-align:center">
 <em>Saturn M1 architecture</em>
 </div>
