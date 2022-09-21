@@ -1,6 +1,6 @@
 ---
 title: Reward distribution for Saturn
-tags: Saturn aliens
+tags: Saturn aliens, Retrievals
 description: Analysis of different options for distributing rewards in Saturn
 breaks: false
 ---
@@ -9,9 +9,9 @@ breaks: false
 
 # Reward distribution for Saturn
 
-#### Maria Silva, August 2022
+#### Maria Silva and Amean Asad, September 2022
 
-In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@msilvaPL/r1YWCz4j9).
+In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@cryptoecon/SJIJEUJbs/%2FmGKG1Iz-RRmbMzsAX468iQ).
 
 We start with a summary of similar work and projects. Then, we discuss all the options and technical details of how to design the reward distribution for Saturn. We conclude the report with an empirical analysis of the options and how they may influence honesty and service [This last part is still WIP!!].
 
@@ -123,7 +123,7 @@ Before detailing the scoring functions, we need to define the service metrics. I
 3. Uptime — Reliability is another behavior we wish to see in Saturn. L1 nodes are expected to be online and, in case of failure, warn the network and fail gracefully. Another point here is that in rewarding uptime, we are, in a way, rewarding available service also. The previous two metrics focus on the actual service experienced by end-users, while uptime considers the nodes' availability to perform services for the network.
 
 :::warning
-:warning: there is another behavior we are not discussing here - geographical coverage. Incentivizing certain regions by providing bigger rewards would be more easily addressed using multiple pools. Could this be something to tackle in later versions, once we have a clearer idea of where the users and node operators are located?
+:warning: there is another behavior we are not discussing here - geographical coverage. Incentivizing certain regions by providing bigger rewards would be more easily addressed using multiple pools. This will be something to tackle in later versions, once we have a clearer idea of where the users and node operators are located.
 :::
 
 #### Bandwidth scoring function
@@ -166,9 +166,18 @@ Why do we use the percentage instead of the number of requests? If we chose the 
 
 #### Uptime scoring function
 
-:::info
-:hammer: Need to check with Saturn team what exact data we can use to measure this!!
-:::
+We currently have a table called `health_check_failures` that stores data on "downtime" events from nodes. Every minute, the orchestrator sends a health check to every node and stores the results. Nodes that fail the health check are logged to the `health_check_failures` table. 
+
+We can get an estimate of downtime from this information. The proposal is to compute the percentage of health check failures per given amount of time. Let $d_i$ represent the health check failure percentage for node $i$. We define $u_i = 1 - d_i$ as the uptime estimate for node $i$. 
+
+To give an example, let's assume we run our payments every hour. For every hour we have 60 health checks (1 per min). If node $k$ failed 20 health checks, then:
+
+$$
+d_k = \frac{20}{60} = \frac{1}{3} \\
+\implies u_k = 1 - d_k = \frac{2}{3}
+$$
+
+It is important to note that this method gives only an estimate of uptime. It is also aggressive with how it penalizes nodes for downtime because it assumes that if a node fails a health check then it must be down for a whole minute. In addition, it will miss downtime events that happen between health checks.
 
 #### Combining scoring functions
 
@@ -202,10 +211,6 @@ Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ 
 :::
 
 ## Simulating Saturn rewards
-
-:::info
-:hammer: WIP
-:::
 
 ### Fair distribution of rewards (L1 nodes)
 
@@ -276,73 +281,83 @@ When setting penalties for dishonesty, there are two main metrics that need to b
 
 If we have these two metrics, then we can define bounds for the penalty adjustment applied to single nodes using two main assumptions:
 
-1. Upper bound assumption - the penalty should be large enough so that it is not economically advantageous to cheat. In other words, the expected reward of cheating (taking into account the probability of detection) needs to be negative.
-2. Lower bound assumption - the penalty should be small enough so that it does not hurt honest nodes considerably. In other words, the expected reward obtained by an honest node should be higher than a certain percentage of the total rewards.
+1. Lower bound assumption - the penalty should be large enough so that it is not economically advantageous to cheat. In other words, the expected reward of cheating (taking into account the probability of detection) needs to be negative.
+2. Upper bound assumption - the penalty should be small enough so that it does not hurt honest nodes considerably. In other words, the expected reward obtained by an honest node should be higher than a certain percentage of the total rewards.
 
-#### Deriving upper bound
+#### Deriving lower bound
 
 Given the following variables:
 
-- $R(m_i)$, the reward node $i$ receives for the service metric $m_i$.
-- $m^*_i$, the service metric for node $i$, including cheating. If there is no cheating, $m^*_i = m_i$.
-- $\alpha$, the true positive rate.
-- $p$, the penalty adjustment.
+- $R_t$, the reward a cheating node receives at payout time $t$, before any penalty is applied.
+- $\alpha$, the true positive rate of the log detection system (we are assuming this rate is stable through time). It can be interpreted as the probability of a cheating node being flagged.
+- $P$, the penalty in case of detection.
+- $n$, the number of past payouts at payout time $t$.
 
-Then, the upper bound assumption leads to the following equation:
+Then, the lower bound assumption requires that the expected reward of cheating be negative, which leads to the following inequality:
+
 
 $$
 \begin{align*}
-   & E(r(m^*_i)) < 0 \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\alpha)\cdot R(m^*_i) + \alpha \cdot p \cdot R(m^*_i) < 0 \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\alpha) + \alpha \cdot p < 0 \Longleftrightarrow \\
-   & \Longleftrightarrow p < \frac{\alpha-1}{\alpha}
+   & \sum_{t=1}^n \bigg( (1-\alpha)\cdot R_t + \alpha (R_t - P) \bigg) < 0  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n \bigg(R_t - \alpha \cdot P \bigg) < 0  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n R_t - \alpha \cdot n \cdot P < 0  \Longleftrightarrow\\
+   & \Longleftrightarrow P > \frac{1}{\alpha} \cdot \frac{\sum_{t=1}^n R_t}{n}
 \end{align*}
 $$
 
-Interestingly, this upper bound does not depend on $r(m_i)$ nor on $m^*_i-m_i$.
+In other words, the penalty needs to be larger that $1 / \alpha$ times the average reward of the node (before penalties).
 
 #### Deriving upper bound
 
 Given the following variables:
 
-- $R(m_i)$, the reward node $i$ receives for the service metric $m_i$.
-- $\beta$, the false positive rate. It can be interpreted as the probability of an honest node being flagged.
+- $R_t$, the reward an honest node receives at payout time $t$, before any penalty is applied.
+- $\beta$, the false positive rate of the log detection system (we are assuming this rate is stable through time). It can be interpreted as the probability of an honest node being flagged.
 - $\tau$, the ratio of rewards that honest nodes should receive on average.
-- $p$, the penalty adjustment.
+- $P$, the penalty in case of detection.
+- $n$, the number of past payouts at payout time $t$.
 
-Then, the lower bound assumption leads to the following equation:
+Then, the upper bound assumption requires that the expected reward of honest node be above $\tau$ times the rewards before penalties, which leads to the following inequality:
 
 $$
 \begin{align*}
-   & E(r(m_i)) > \tau \cdot R(m_i) \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\beta)\cdot R(m_i) + \beta \cdot p \cdot R(m_i) > \tau \cdot R(m_i) \Longleftrightarrow \\
-   & \Longleftrightarrow (1-\beta) + \beta \cdot p > \tau \Longleftrightarrow \\
-   & \Longleftrightarrow p > \frac{\tau + \beta - 1}{\beta}
+   & \sum_{t=1}^n \bigg( (1-\beta)\cdot R_t + \beta (R_t - P) \bigg) > \tau \sum_{t=1}^n R_t  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n \bigg(R_t - \beta \cdot P \bigg) > \tau \sum_{t=1}^n R_t  \Longleftrightarrow\\
+   & \Longleftrightarrow \sum_{t=1}^n R_t - \beta \cdot n \cdot P > \tau \sum_{t=1}^n R_t  \Longleftrightarrow\\
+   & \Longleftrightarrow P < \frac{1-\tau}{\beta} \cdot \frac{\sum_{t=1}^n R_t}{n}\\
 \end{align*}
 $$
 
-Note that once again this bound does not depend on $r(m_i)$ nor on $m^*_i-m_i$.
+In other words, the penalty needs to be smaller that $(1-\tau) / \beta$ times the average reward of the node (before penalties).
 
 #### Bounds estimation
 
-To arrive at the optimal values for the penalty adjustment, we computed the lower and upper bounds derived above, assuming a range of values for the true positive rate $\alpha$, the false positive rate $\beta$ and the minimum reward ratio $\tau$. The next plots show the values obtained:
+In this section, we plot the *penalty adjustment* derived above, assuming a range of values for the true positive rate $\alpha$, the false positive rate $\beta$ and the minimum reward ratio $\tau$. Note that the *penalty adjustment* is a fixed number to be multiplied by each node's average reward (excluding penalties).
 
-| ![](https://i.imgur.com/iIpMlqe.png) | ![](https://i.imgur.com/KABj7Fd.png) |
-| ------------------------------------ | ------------------------------------ |
+The next plots show the values obtained:
+
+| ![](https://hackmd.io/_uploads/ByWBrCLWs.png) | ![](https://hackmd.io/_uploads/rk-Pr0UZj.png) |
+| --------------------------------------------- | --------------------------------------------- |
 
 As we can see, there is a limited window for the penalty adjustment that meets both bounds. In addition, the worse the detection system (i.e. the lower the true positive rate and the higher the false positive rate), the smaller this window is. In fact, these curves already give us some goals that we should meet with the detection system, namely, having a false positive rate lower than 5% and a true positive rate higher than 25%.
 
-Another consideration is that the penalty adjustment needs to be negative to meet the upper bound assumptions. This is intuitive since, were it not negative, dishonest nodes would always gain some money because no detection system will catch all the fake logs. However, this creates a problem in a situation where collateral is not required - if a node is flagged, and it is assigned a negative reward, where is that money coming from?
+Another consideration is that the penalty needs to be bigger than 1 (i.e. needs to be bigger than the average reward per payout). This is intuitive since, were it not the case, dishonest nodes would always gain some money because no detection system will catch all the fake logs. However, this creates a problem in a situation where collateral is not required - if a node is flagged, and it is assigned a negative reward, where is that money coming from?
 
-A possible solution is to introduce some delay to rewards. When a node submits logs, a reward is computed and stored for some time. If, in the meantime, that nodes gets assigned a negative score, it will be deducted from the stored rewards. Finally, the rewards that "vest" at each day will be sent to the node, minus the penalties applied.
+A possible solution is to introduce some delay to rewards. When a node submits logs, a reward is computed and stored for some time. If, in the meantime, that nodes gets assigned a penalty, it will be deducted from the stored rewards. Finally, the rewards that "vest" at each day will be sent to the node, minus the penalties applied. Therefore, at each point in time, all nodes have money "at stake" that can be slashed to cover for penalties.
 
 :::info
-:hammer: Final suggestion: -4 seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate.
+:hammer: Final suggestion: 5 times the average reward per payout seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate (20%).
+:::
+
+:::warning
+:warning: We still need to check whether the payout frequency impacts the long-term aggregated penalties
 :::
 
 ### Full simulation (with sample data)
 
-TBD
+:::info
+:hammer: WIP
+:::
 
 ## References
 

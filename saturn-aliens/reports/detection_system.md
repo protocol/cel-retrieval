@@ -1,6 +1,6 @@
 ---
 title: Saturn's log detection module
-tags: Saturn aliens
+tags: Saturn aliens, Retrievals
 description: Design and analysis of Saturn's logs detection module
 breaks: false
 ---
@@ -82,7 +82,7 @@ Also, in some heuristics, we don't have enough data to fit a distribution (namel
 ## Multivariate anomaly detection
 
 :::info
-:hammer: WIP - check [PyOD](https://www.andrew.cmu.edu/user/yuezhao2/papers/22-preprint-adbench.pdf) Benchmark
+:hammer: WIP - will start with the [PyOD](https://www.andrew.cmu.edu/user/yuezhao2/papers/22-preprint-adbench.pdf) Benchmark
 :::
 
 ## Future developments
