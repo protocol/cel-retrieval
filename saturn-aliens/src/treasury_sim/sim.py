@@ -1,5 +1,13 @@
+import os
+import sys
 import numpy as np
 from typing import List
+
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+MODULE_DIR = os.path.abspath(os.path.join(os.path.dirname(SCRIPT_DIR), ".."))
+sys.path.append(MODULE_DIR)
+
 from treasury_sim.operator import Operator
 
 
@@ -26,9 +34,10 @@ def run_single_sim(
         update_ops_rewards(ops_list, day_pool, k1, k2, penalty_multiplier)
         # Compute final payout (after penalties)
         update_ops_payouts(ops_list)
-        # Add new ops to list
-        new_ops = generate_ops(new_ops_num)
-        ops_list += new_ops
+        # Add new ops to list (if we are not in the last iteration)
+        if sim_step < sim_len - 1:
+            new_ops = generate_ops(new_ops_num)
+            ops_list += new_ops
     return ops_list
 
 

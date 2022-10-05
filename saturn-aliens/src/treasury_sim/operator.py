@@ -65,6 +65,8 @@ class Operator:
         if is_flagged:
             self.collateral_balance -= self.penalty
             self.penalty_list.append(self.penalty)
+        else:
+            self.penalty_list.append(0.0)
         # Update saved collateral and compute payout
         if self.collateral_balance < self.penalty:
             missing_collateral = self.penalty - self.collateral_balance
@@ -74,3 +76,52 @@ class Operator:
             payout: float = curr_reward
         # Update payout list
         self.payout_list.append(payout)
+
+    def get_payout_count(self) -> float:
+        non_zero_payouts = [p for p in self.payout_list if p > 0]
+        return len(non_zero_payouts)
+
+    def count_missed_payouts(self) -> int:
+        zero_payouts = [p for p in self.payout_list if p == 0.0]
+        return len(zero_payouts)
+
+    def get_total_payout(self) -> float:
+        return sum(self.payout_list)
+
+    def get_avg_payout(self) -> float:
+        non_zero_payouts = [p for p in self.payout_list if p > 0]
+        if len(non_zero_payouts) == 0:
+            return 0.0
+        else:
+            return np.mean(non_zero_payouts)
+
+    def get_median_payout(self) -> float:
+        if len(self.payout_list) == 0:
+            return 0.0
+        else:
+            return np.median(self.payout_list)
+
+    def get_total_penalty(self) -> float:
+        return sum(self.penalty_list)
+
+    def get_flag_count(self) -> int:
+        return len(self.penalty_list)
+
+    def get_avg_penalty(self) -> float:
+        non_zero_penalties = [p for p in self.penalty_list if p > 0]
+        if len(non_zero_penalties) == 0:
+            return 0.0
+        else:
+            return np.mean(non_zero_penalties)
+
+    def get_max_consecutive_no_penalty(self) -> int:
+        max_no_p_count = 0
+        curr_no_p_count = 0
+        for flag in self.flag_list:
+            if flag == False:
+                curr_no_p_count += 1
+            else:
+                if curr_no_p_count > max_no_p_count:
+                    max_no_p_count = curr_no_p_count
+                curr_no_p_count = 0
+        return max_no_p_count
