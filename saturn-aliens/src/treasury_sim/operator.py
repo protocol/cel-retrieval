@@ -11,7 +11,7 @@ class Operator:
         self.reward_list: List[float] = []  # rewards before penalties
         self.bandwidth_list: List[float] = []
         self.flag_list: List[bool] = []
-        self.collateral_saved: float = 0.0
+        self.collateral_balance: float = 0.0
         self.penalty: float = None
         self.penalty_list: List[float] = []
 
@@ -54,22 +54,22 @@ class Operator:
         )
         self.flag_list.append(flag)
 
-    def add_reward(self, reward: float) -> None:
+    def add_reward(self, reward: float, penalty_multiplier: float) -> None:
         self.reward_list.append(reward)
-        self.penalty = 5.0 * np.mean(self.reward_list)
+        self.penalty = penalty_multiplier * np.mean(self.reward_list)
 
     def compute_current_payout(self) -> None:
         is_flagged: bool = self.flag_list[-1]
         curr_reward: float = self.reward_list[-1]
         # Apply penalty in case of detection
         if is_flagged:
-            self.collateral_saved -= self.penalty
+            self.collateral_balance -= self.penalty
             self.penalty_list.append(self.penalty)
         # Update saved collateral and compute payout
-        if self.collateral_saved < self.penalty:
-            missing_collateral = self.penalty - self.collateral_saved
+        if self.collateral_balance < self.penalty:
+            missing_collateral = self.penalty - self.collateral_balance
             payout: float = max(0.0, curr_reward - missing_collateral)
-            self.collateral_saved += curr_reward - payout
+            self.collateral_balance += curr_reward - payout
         else:
             payout: float = curr_reward
         # Update payout list
