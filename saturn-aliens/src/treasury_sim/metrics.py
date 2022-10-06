@@ -26,6 +26,7 @@ def compute_op_metrics(op_list: List[Operator]) -> pd.DataFrame:
             op.get_max_consecutive_no_penalty() for op in op_list
         ],
         "collateral_balance": [op.collateral_balance for op in op_list],
+        "total_bandwidth": [op.get_total_bandwidth for op in op_list],
     }
     op_df = pd.DataFrame(op_dict)
     return op_df
@@ -60,9 +61,10 @@ def compute_ops_trajectory(
                 "payout": op.payout_list,
                 "flag": op.flag_list,
                 "penalty": op.penalty_list,
+                "bandwidth": op.bandwidth_list,
             }
         )
-        traj_df = pd.concat([traj_df, op_df])
+        traj_df = pd.concat([traj_df, op_df], ignore_index=True)
     for param, value in attrs.items():
         traj_df[param] = value
     return traj_df

@@ -80,4 +80,4 @@ def update_ops_flags(ops_list: List[Operator]) -> None:
 
 def update_ops_payouts(ops_list: List[Operator]) -> None:
     for op in ops_list:
-        op.compute_current_payout()
+        op.compute_payout()

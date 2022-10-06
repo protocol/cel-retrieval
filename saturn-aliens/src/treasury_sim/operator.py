@@ -9,7 +9,7 @@ class Operator:
         self.set_detection_prob()
         self.payout_list: List[float] = []
         self.reward_list: List[float] = []  # rewards before penalties
-        self.bandwidth_list: List[float] = []
+        self.bandwidth_list: List[float] = []  # bandwidth in TBs per day
         self.flag_list: List[bool] = []
         self.collateral_balance: float = 0.0
         self.penalty: float = None
@@ -17,18 +17,18 @@ class Operator:
 
     def set_performance(self) -> None:
         if self.op_type == "honest_high_l1":
-            self.mu_bandwidth: float = 100.0
-            self.sigma_bandwidth: float = 1.0
+            self.mu_bandwidth: float = 1.2
+            self.sigma_bandwidth: float = 0.1
             self.uptime: float = 1.0
             self.speed_ratio: float = 1.0
         elif self.op_type in ["honest_normal_l1", "cheating_l1"]:
-            self.mu_bandwidth: float = 80.0
-            self.sigma_bandwidth: float = 1.0
+            self.mu_bandwidth: float = 1.0
+            self.sigma_bandwidth: float = 0.1
             self.uptime: float = 1.0
             self.speed_ratio: float = 0.9
         elif self.op_type == "honest_low_l1":
-            self.mu_bandwidth: float = 50.0
-            self.sigma_bandwidth: float = 1.0
+            self.mu_bandwidth: float = 0.6
+            self.sigma_bandwidth: float = 0.1
             self.uptime: float = 0.9
             self.speed_ratio: float = 0.5
         else:
@@ -45,7 +45,7 @@ class Operator:
             raise ValueError("Invalid op_type")
 
     def generate_bandwidth(self) -> None:
-        bw: float = np.random.normal(self.mu_bandwidth, self.sigma_bandwidth)
+        bw: float = max(0.0, np.random.normal(self.mu_bandwidth, self.sigma_bandwidth))
         self.bandwidth_list.append(bw)
 
     def generate_flag(self) -> None:
@@ -58,7 +58,7 @@ class Operator:
         self.reward_list.append(reward)
         self.penalty = penalty_multiplier * np.mean(self.reward_list)
 
-    def compute_current_payout(self) -> None:
+    def compute_payout(self) -> None:
         is_flagged: bool = self.flag_list[-1]
         curr_reward: float = self.reward_list[-1]
         # Apply penalty in case of detection
@@ -105,7 +105,7 @@ class Operator:
         return sum(self.penalty_list)
 
     def get_flag_count(self) -> int:
-        return len(self.penalty_list)
+        return sum(self.flag_list)
 
     def get_avg_penalty(self) -> float:
         non_zero_penalties = [p for p in self.penalty_list if p > 0]
@@ -125,3 +125,6 @@ class Operator:
                     max_no_p_count = curr_no_p_count
                 curr_no_p_count = 0
         return max_no_p_count
+
+    def get_total_bandwidth(self) -> float:
+        return sum(self.bandwidth_list)
