@@ -16,13 +16,13 @@ class Operator:
         self.penalty_list: List[float] = []
 
     def set_performance(self) -> None:
-        if self.op_type == "honest_high_l1":
+        if self.op_type in ["honest_high_l1", "cheating_l1"]:
             self.mu_bandwidth: float = 1.2
             self.sigma_bandwidth: float = 0.1
             self.uptime: float = 1.0
             self.speed_ratio: float = 1.0
-        elif self.op_type in ["honest_normal_l1", "cheating_l1"]:
-            self.mu_bandwidth: float = 1.0
+        elif self.op_type == "honest_normal_l1":
+            self.mu_bandwidth: float = 0.9
             self.sigma_bandwidth: float = 0.1
             self.uptime: float = 1.0
             self.speed_ratio: float = 0.9
@@ -38,7 +38,7 @@ class Operator:
         honest_ops = ["honest_high_l1", "honest_normal_l1", "honest_low_l1"]
         cheating_ops = ["cheating_l1"]
         if self.op_type in honest_ops:
-            self.detection_prob: float = 0.02
+            self.detection_prob: float = 0.01
         elif self.op_type in cheating_ops:
             self.detection_prob: float = 0.25
         else:
@@ -124,6 +124,8 @@ class Operator:
                 if curr_no_p_count > max_no_p_count:
                     max_no_p_count = curr_no_p_count
                 curr_no_p_count = 0
+        if curr_no_p_count > max_no_p_count:
+            max_no_p_count = curr_no_p_count
         return max_no_p_count
 
     def get_total_bandwidth(self) -> float:

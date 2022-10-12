@@ -26,7 +26,7 @@ def compute_op_metrics(op_list: List[Operator]) -> pd.DataFrame:
             op.get_max_consecutive_no_penalty() for op in op_list
         ],
         "collateral_balance": [op.collateral_balance for op in op_list],
-        "total_bandwidth": [op.get_total_bandwidth for op in op_list],
+        "total_bandwidth": [op.get_total_bandwidth() for op in op_list],
     }
     op_df = pd.DataFrame(op_dict)
     return op_df
