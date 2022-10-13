@@ -210,6 +210,10 @@ Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ 
 :warning: Another consideration here is whether we should pay L2s at all. Recall that Wilkins et al. [4] argued that financial incentives are not the main driver of participation in the commons and can sometimes worsen participation. Are there any other types of incentives we could offer instead? E.g., access to premium features or some sort of bragging items?
 :::
 
+:::info
+:hammer: L2 node operators incentives will be further analyzed in later iterations. The launch of the L2 public network is only planned for beginning of 2023.
+:::
+
 ## Simulating Saturn rewards
 
 ### Fair distribution of rewards (L1 nodes)
@@ -267,12 +271,12 @@ However, the interesting observation here is how much the linear functions smoot
 
 This is a very relevant mechanism as we are incenting nodes to be good at all the metrics and, at the same, penalizing heavily any decrease in performance. Note that the bandwidth smooth follows the same trend as the all linear, but since the speed and uptime metrics get a sublinear exponent, the "penalty" for poor performance is smoothed.
 
-:::info
-:hammer: Final suggestion!
+:::warning
+:warning: An important caveat: the reward distribution obtained above depend heavily on the service metrics generated. If we were to observe a higher dispersion in performance, then the reward inequality would increase. In addition, as expected, this increase would be felt more heavily on the supra-linear functions.
 :::
 
 :::warning
-:warning: An important caveat: the reward distribution obtained above depend heavily on the service metrics generated. If we were to observe a higher dispersion in performance, then the reward inequality would increase. In addition, as expected, this increase would be felt more heavily on the supra-linear functions.
+:mega: Parameter suggestion: the direct multiplication functions seem to lead to a more flexible design where speed and uptime performance can be set to have bigger impact on the final rewards. In addition, sublinear or linear functions on bandwidth seem to be more desirable since they signal to the network a preference towards a low-concentration of resources and rewards. In the end, we want a rich network of many participants, coming together to share the load.
 :::
 
 ### Incentivizing honesty
@@ -345,19 +349,67 @@ Another consideration is that the penalty needs to be bigger than 1 (i.e. needs 
 
 A possible solution is to introduce some delay to rewards. When a node submits logs, a reward is computed and stored for some time. If, in the meantime, that nodes gets assigned a penalty, it will be deducted from the stored rewards. Finally, the rewards that "vest" at each day will be sent to the node, minus the penalties applied. Therefore, at each point in time, all nodes have money "at stake" that can be slashed to cover for penalties.
 
-:::info
-:hammer: Final suggestion: 5 times the average reward per payout seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate (20%).
-:::
-
 :::warning
-:warning: We still need to check whether the payout frequency impacts the long-term aggregated penalties
+:mega: Parameter suggestion: a penalty between 4 and 10 times the average reward per payout seems a good compromise between a low enough false positive rate (1%), a reasonable true positive rate (25%), and high enough $\tau$ (90%).
 :::
 
-### Full simulation (with sample data)
+### Full simulation (setting the final parameters)
 
-:::info
-:hammer: WIP
-:::
+There are three main questions we want to answer with this final simulation, namely:
+
+1. Given a new pool of funds to distribute in Saturn, how should the pool be distributed through time? In particular, we test two options - a constant pool and a growth pool (more details will follow in the dedicated subsection)
+2. What should be the final scoring function? Assuming that we use a direct multiplication function, what should be the exponent for bandwidth and the exponent for speed performance and uptime?
+3. What should be the final penalty multiplier and does it work as intended?
+
+We will analyze each question in its dedicated subsection. However, the results were taken from a simulation that used some common assumptions:
+
+* Simulation time: 6 months
+* Payout frequency: Once per day
+* Initial reward pool investment: 600k dollars for the 6 months (or 120k FIL at the current $5 price)
+* Initial set of operators: 50
+* New operators' inflow (i.e. new operators entering the network): 5 per day
+* Operator types:
+    * Honest high-performing L1 operator (10% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 1.2 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 100%
+      * Uptime is 100%
+      * Probability of being flagged by the log detection module of 1% (False positive rate)
+    * Honest average L1 operator (75% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 0.9 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 90%
+      * Uptime is 100%
+      * Probability of being flagged by the log detection module of 1% (False positive rate)
+    * Honest low-performing L1 operator (10% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 0.6 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 50%
+      * Uptime is 90%
+      * Probability of being flagged by the log detection module of 1% (False positive rate)
+    * Cheating L1 operator (5% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 1.2 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 100%
+      * Uptime is 100%
+      * Probability of being flagged by the log detection module of 25% (True positive rate)
+
+#### Reward pool
+
+WIP
+
+#### Scoring function
+
+WIP
+
+* Scoring functions
+    * Direct multiplication
+    * Bandwidth exponent: $k_1 \in \{0.5, 1, 2\}$ -> how much do we want to distribute rewards evenly?
+    * Uptime and speed exponents: $k_2 \in \{0.5, 1, 2\}$ -> how severe should performance "penalties" be?
+
+#### Penalty multiplier
+
+WIP
+
+* Penalty size:
+    * 5x average reward
+    * 7x average reward
 
 ## References
 
