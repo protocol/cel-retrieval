@@ -392,7 +392,66 @@ We will analyze each question in its dedicated subsection. However, the results 
 
 #### Reward pool
 
-WIP
+In terms of the reward pool, we tested two different strategies. The first is the *constant reward pool*, which is the simplest and most obvious way of splitting a pool of rewards through time. In particular, we picked the total pool (i.e. 120k FIL) and we divided it by the number of days we expected the pool to subside the network ($30 \times 6$ months $= 180$ days), which results in constant daily pool of 667 FIL.
+
+The second strategy is the *growth reward pool*, which aims to distribute rewards based on the network's growth. The idea is to have a baseline of network growth at each point in time (in this case, the total bandwidth delivered) and to increase the available pool of rewards as the network achieves the defined baseline.
+
+More concretely, given the following variables:
+
+* $B_t$: the actual cumulative bandwidth provided by the network from launch to the payout time $t$
+* $\tilde{B}_t$: the baseline cumulative bandwidth set as goal for the network to deliver between launch and the payout time $t$
+* $R$: total reward pool in FIL
+* $n$: total number of payouts for the reward pool $R$
+
+we define the available reward pool for payout time $t$ as the difference between the cumulative rewards at payout $t$ and payout $t-1$:
+
+$r_t = R_t - R_{t-1}$
+
+and we define the cumulative rewards at payout $t$ based on the share of bandwidth delivered by the network:
+
+$R_t = R \cdot \frac{\min(B_t, \tilde{B}_t) }{\tilde{B}_n}$
+
+Note that the baseline function $\tilde{B}_t$ can have any formula desired. However, for the purpose of the simulation we aimed to have a linear growth in bandwidth for the network. The formula used is the following (assuming bandwidth is measured in TB):
+
+$\tilde{B}_t = 50 \cdot t + 2.5 \cdot t \cdot (t + 1)$
+
+Now that we defined the two strategies, let's see the results obtained in terms of capital deployment. The next plots show the total rewards being paid each day (which corresponds to the simulation's payout frequency).
+
+| Constant reward pool                          |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/Sk1vw6c7i.png) |
+
+| Growth reward pool                            |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/rJF_vpc7i.png) |
+
+ As expected, the constant reward pool is fairly stable, paying a constant amount of FIL every day, as designed. The random variations around this trend come from the normal variation on the operators being detected by the log detection system.
+
+ On the other hand, the growth reward pool has a linear growth trend in terms to total daily rewards paid. This is in line with the simulated behavior of operators, where each day there is a new inflow of operators and, as a consequence, an observed growth in total bandwidth served.
+ 
+In both cases, daily deployed capital takes some days to reach its stable trend. This is caused by the withholding of rewards to build the collateral balance of new operators.
+
+It is also important to note that the scoring functions don't seem to have a meaningful impact on daily deployed capital, while the penalty multipliers do have an impact. This is expected since higher penalty multipliers lead to higher overall penalties and, thus, lower aggregate rewards.
+
+ The next two plots show the daily reward paid on average to a single operator (split by type of operator).
+
+| Constant reward pool                          |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/SkbCw6cXi.png) |
+
+| Growth reward pool                            |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/rJ7gda97i.png) |
+
+Now we can clearly see the advantage of the growth reward pool over the constant reward pool - as the network growth and new operators join, the constant reward pool leads to a negative-sum game where participants get smaller rewards. This leads to a bad incentive where operators are directly disadvantaged by having new operators join the network. 
+
+On the other hand, the growth pool does not suffer from this decay in rewards, with the average reward paid to each operator remaining fairly constant after the first days of the network's launch. For this reason, we **propose the use of the growth reward pool mechanism** over the constant reward pool. Thus, for the remaining analysis, we will focus on the results obtained using this strategy.
+
+We should note that if the network grows at a faster rate than the baseline, then we will experience a decrease in average rewards per operator since the total daily reward is always capped by the baseline. In other words, if more people join the network than what is set by the baseline, those additional operators above the baseline will dilute the total rewards and decrease the average reward for each operator. Because of this **we need to take great care in designing the baseline function $\tilde{B}_t$**.
+
+:::info
+:hammer: What should be the baseline function $\tilde{B}_t$?
+:::
 
 #### Scoring function
 
@@ -410,6 +469,7 @@ WIP
 * Penalty size:
     * 5x average reward
     * 7x average reward
+
 
 ## References
 
