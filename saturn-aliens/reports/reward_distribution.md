@@ -445,7 +445,11 @@ It is also important to note that the scoring functions don't seem to have a mea
 
 Now we can clearly see the advantage of the growth reward pool over the constant reward pool - as the network growth and new operators join, the constant reward pool leads to a negative-sum game where participants get smaller rewards. This leads to a bad incentive where operators are directly disadvantaged by having new operators join the network. 
 
-On the other hand, the growth pool does not suffer from this decay in rewards, with the average reward paid to each operator remaining fairly constant after the first days of the network's launch. For this reason, we **propose the use of the growth reward pool mechanism** over the constant reward pool. Thus, for the remaining analysis, we will focus on the results obtained using this strategy.
+On the other hand, the growth pool does not suffer from this decay in rewards, with the average reward paid to each operator remaining fairly constant after the first days of the network's launch. For this reason, we propose the use of the growth reward pool mechanism over the constant reward pool. Thus, for the remaining analysis, we will focus on the results obtained using this strategy.
+
+:::warning
+:mega: Parameter suggestion: use a growth reward pool strategy where the total rewards being distributed in a given payout window depends on the total bandwidth served by the network during the window.
+:::
 
 We should note that if the network grows at a faster rate than the baseline, then we will experience a decrease in average rewards per operator since the total daily reward is always capped by the baseline. In other words, if more people join the network than what is set by the baseline, those additional operators above the baseline will dilute the total rewards and decrease the average reward for each operator. Because of this **we need to take great care in designing the baseline function $\tilde{B}_t$**.
 
@@ -455,21 +459,56 @@ We should note that if the network grows at a faster rate than the baseline, the
 
 #### Scoring function
 
-WIP
+In terms of the scoring functions we use a direct multiplication function with one exponent for bandwidth ($k_1$) and one exponent for uptime and speed performance ratio ($k_2$). We ran one simulation for each combination of exponents, with both $k_1$ and $k_2$ taking three possible values: 0.5, 1 and 2. Concretely, if $b_i$ is the total bandwidth operator $i$ served at given payout window and $s_i$ and $u_i$ are the operator's speed performance ratio and uptime, respectively, we define the scoring function for that operator as:
 
-* Scoring functions
-    * Direct multiplication
-    * Bandwidth exponent: $k_1 \in \{0.5, 1, 2\}$ -> how much do we want to distribute rewards evenly?
-    * Uptime and speed exponents: $k_2 \in \{0.5, 1, 2\}$ -> how severe should performance "penalties" be?
+$S_i= \frac{b_i^{k_1} \cdot s_i^{k_2} \cdot u_i^{k_2}}{\sum_{j=1}^n b_j^{k_1} \cdot s_j^{k_2} \cdot u_j^{k_2}}$
+
+With this design, the exponent $k_1$ controls how much we reward over-performance on bandwidth. In other words, a lower $k_1$ will distribute rewards more evenly in regard to the bandwidth served, while a high $k_1$ will overcompensate operators serving more bandwidth than the "average" operator.
+
+As for the $k_2$ exponent, it controls how severely underperformance in either uptime of download speed is penalized. A high $k_2$ exponent leads to large drops of reward when uptime or the speed performance ratio fall below 100%.  On the other hand, a low $k_2$ exponent will make those drops smoother and the rewards in case of underperformance slightly higher.
+
+To understand how the different exponents impact rewards, we focus the analysis on the simulations run with a growth reward pool and a penalty multiplier of 5x average rewards. Note that these two design choices are studied on the remaining subsections.
+
+The next plot shows the distribution of the daily payout to operators. We can see the distribution for each operator type and for each combination of $k_1$ and $k_2$.
+
+![](https://hackmd.io/_uploads/HyRf4xiXs.png)
+
+The first observation is that some payouts are zero. This happens in days when the operators are accumulating the balance required to cover future penalties.
+
+Secondly, as expected, performance has a significant impact on the payout to operators, with high performing operators getting higher rewards, followed by the normal operators, which are followed by the low performing operators. In addition, the exponents of the scoring function has a meaningful effect on how different are the payouts between the three operator types.
+
+For most exponent combinations, the normal operators do not experience a relevant impact on their payouts. In fact, the payout seems to be mostly flowing between the low performers and the high performers (which make only 20% of all operators). The exception is with $k_1 = 2$, where even the normal operator see their rewards reduce slightly to accommodate the higher rewards being given to the high-performers.
+
+In the next plot, we show a scatter-plot of the total payout given to each operator against the total bandwidth served by that operator. Here, each dot is a single operator, and the data is split by scoring function and by operator type:
+
+![](https://hackmd.io/_uploads/S1O-rgjXo.png)
+
+Here we can see more clearly the impact that the various exponents have on the relationship between committed bandwidth and rewards. For instance, if we fix $k_2$ (i.e. look at the plot column-wise), we can see that the smaller the bandwidth exponent $k_1$ is, the more we reward longevity. This means that, in the long run, when $k_1$ is low, operators that are in the network for longer are more rewarded for the same amount of bandwidth contributed. Diversely, when $k_1$ is high, high-performers get larger rewards for the same amount of bandwidth contributed. Now, if we fix $k_1$ (i.e. look at the plot row-wise), we observe a similar trend, where increasing the exponent $k_2$ leads to an increasing gap between the 3 types of operators. However, the effect is not as considerable the impact of increasing the bandwidth exponent $k_1$.
+
+:::warning
+:mega: Parameter suggestion: scoring function is a direct multiplication of bandwidth, uptime and speed performance ratio. The exponent for the bandwidth is $k_1 = 0.5$ and the exponent for uptime and speed performance ratio is $k_2=2$. The choice of exponents comes from the desire to distribute rewards more evenly among operators, while penalizing in a meaningful way the operators that not achieving a good uptime and download speed performance. In other words, we want to see a network that shares the load in terms of bandwidth, while maintaining high performance standards.
+:::
 
 #### Penalty multiplier
 
-WIP
+From the bounds' analysis done in a previous section, we got an acceptable range for the penalty multiplier. Given the range (from 5x to 10x), we picked the values 5x and 7x to include in the analysis.
 
-* Penalty size:
-    * 5x average reward
-    * 7x average reward
+The following plot shows the distribution of the penalty ratio for each operator type and for each penalty multiplier. Note that this ratio is defined as the total penalties received by an operator divided by the total rewards before penalties (which corresponds to the $1-\tau$).
 
+![](https://hackmd.io/_uploads/HJOnbC57j.png)
+
+The first takeaway is that even with a false positive rate of 1%, honest operators still experience penalties, which is expected. For the majority of honest nodes, when the multiplier is 5x, their penalties are lower than 20% of the rewards before penalties. With a multiplier of 7x, this ratio increases to 30%. In both cases, the median ratio is bellow 10%, which is the value set by upper bound assumption.
+
+Now, looking at the cheating operators, a big majority have a penalty ratio of 1, which is positive. However, there are still some operators that manage to extract value from the network. In this case, the penalty multiplier has a significant impact on the value cheating operators are able to extract from the network (assuming that the scoring exponents are $k_1=0.5$ and $k_2=2$):
+
+* With a multiplier of 5x, these operators can collectively extract between 223 FIL during the 6 months. This is an average of 4.5 FIL per operator.
+* With a multiplier of 7x, these operators can collectively extract between 134 FIL during the 6 months. This is an average of 2.3 FIL per operator. 
+
+What about the percentage of operators that manage to get at least one payout? With a multiplier of 5x, 46% of the cheating operators get at least one payout. This percentage is reduced to 21% when the multiplier is 7x.
+
+:::warning
+:mega: Parameter suggestion: use a penalty multiplier of 5x. Even though a higher multiplier has a significant impact on the percentage of cheaters that are able to extract value from the network (46% to 21%), the overall value extracted does not seem to be higher enough to justify the impact experienced by honest nodes (who get a slash in their rewards of 30% instead of 20%).
+:::
 
 ## References
 
