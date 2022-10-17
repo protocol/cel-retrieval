@@ -13,7 +13,7 @@ breaks: false
 
 In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@cryptoecon/SJIJEUJbs/%2FmGKG1Iz-RRmbMzsAX468iQ).
 
-We start with a summary of similar work and projects. Then, we discuss all the options and technical details of how to design the reward distribution for Saturn. We conclude the report with an empirical analysis of the options and how they may influence honesty and service [This last part is still WIP!!].
+We start with a summary of similar work and projects. Then, we discuss all the options and technical details of how to design the reward distribution for Saturn. We conclude the report with an empirical analysis of the options and how they may influence honesty and service.
 
 ## Retrieval markets and Saturn
 
