@@ -13,7 +13,7 @@ breaks: false
 
 In this report, we discuss the technical details of Saturn's reward distribution module. This is one of the two main components of [Saturn's Treasury](https://hackmd.io/@cryptoecon/SJIJEUJbs/%2FmGKG1Iz-RRmbMzsAX468iQ).
 
-We start with a summary of similar work and projects. Then, we discuss all the options and technical details of how to design the reward distribution for Saturn. We conclude the report with an empirical analysis of the options and how they may influence honesty and service [This last part is still WIP!!].
+We start with a summary of similar work and projects. Then, we discuss all the options and technical details of how to design the reward distribution for Saturn. We conclude the report with an empirical analysis of the options and how they may influence honesty and service.
 
 ## Retrieval markets and Saturn
 
@@ -75,9 +75,9 @@ On the other hand, in a pool that is not pre-defined (i.e. variable), the total 
 1. Since Saturn is expected to be a content delivery market, having clients fund the network is the most straightforward way of building a sustainable flow of rewards.
 2. Since rewards will depend on the funding being brought into the network, all participants are incentivized to “sell” Saturn and contribute to its usage.
 
-However, a variable pool has the disadvantage of being less predicable, which can deter node operators to make big upfront investments. Another option is to have a **hybrid pool that contains a pre-determined base component and a variable component**. The base component would be funded by a fixed initial pool of Filecoin while the variable component would be funded by the new clients joining the network. This way, the base pool gives more predictability, whiles the variable pool encourages growth and adoption.
+However, a variable pool has the disadvantage of being less predicable, which can deter node operators to make big upfront investments. Another option is to have a **hybrid pool that contains a pre-determined base component and a variable component**. The base component would be funded by a fixed initial pool of Filecoin while the variable component would be funded by the new clients joining the network. This way, the base pool gives more predictability, whiles the variable pool encourages growth and adoption. This is the chosen design for Saturn. We have an initial amount of FIL invested by Protocol Labs that aims to kick-start the network and provide that stable amount of rewards in the beginning. Then, clients come in, their FIL will be added to the pool, thus, continuing to fund the operation.
 
-Connected to this consideration is the definition of the **payout window for the pool**. For a given new inflow of funding to the reward pool, we need to define how the total funding will be split daily to pay rewards. Blockchains such as Bitcoin use an exponential decay model, where mining rewards get exponentially smaller with time. This model benefits early adopters so that the network achieves a faster growth at the start. Another option is to split the total funding equally throughout the duration of the client agreement, which would be the simplest approach. It is not clear what is the best approach here, so this is **still to be discussed with the team**.
+Connected to this consideration is the definition of the **pool's payout distribution**. For a given new inflow of funding to the reward pool, we need to define how the total funding will be split daily to pay rewards. Blockchains such as Bitcoin use an exponential decay model, where mining rewards get exponentially smaller with time. This model benefits early adopters so that the network achieves a faster growth at the start. Another option is to split the total funding equally throughout the duration of the client agreement, which would be the simplest approach. Another approach is to tie the reward distribution to the network's growth (e.g. the total bandwidth provided by the network). This design has the advantage of aligning incentives with growth since operators will want to collectively growth the network to extract bigger rewards. It also reduces the impact of larger rewards for early adopters and makes rewards more or less constant through time. This question is further **discussed in the simulation section and is one of the design options tested during the simulations**.
 
 The third consideration is whether we should have a singe pool or whether it should be split. Splitting means that we would assign specific amounts of Filecoin to specific groups of nodes (L1 vs. L2s) or to specific incentives (e.g., speed and reliability).
 
@@ -210,6 +210,10 @@ Once we have $R^*$, we can use the same scoring functions to redistribute $R^*$ 
 :warning: Another consideration here is whether we should pay L2s at all. Recall that Wilkins et al. [4] argued that financial incentives are not the main driver of participation in the commons and can sometimes worsen participation. Are there any other types of incentives we could offer instead? E.g., access to premium features or some sort of bragging items?
 :::
 
+:::info
+:hammer: L2 node operators incentives will be further analyzed in later iterations. The launch of the L2 public network is only planned for beginning of 2023.
+:::
+
 ## Simulating Saturn rewards
 
 ### Fair distribution of rewards (L1 nodes)
@@ -267,12 +271,12 @@ However, the interesting observation here is how much the linear functions smoot
 
 This is a very relevant mechanism as we are incenting nodes to be good at all the metrics and, at the same, penalizing heavily any decrease in performance. Note that the bandwidth smooth follows the same trend as the all linear, but since the speed and uptime metrics get a sublinear exponent, the "penalty" for poor performance is smoothed.
 
-:::info
-:hammer: Final suggestion!
+:::warning
+:warning: An important caveat: the reward distribution obtained above depend heavily on the service metrics generated. If we were to observe a higher dispersion in performance, then the reward inequality would increase. In addition, as expected, this increase would be felt more heavily on the supra-linear functions.
 :::
 
 :::warning
-:warning: An important caveat: the reward distribution obtained above depend heavily on the service metrics generated. If we were to observe a higher dispersion in performance, then the reward inequality would increase. In addition, as expected, this increase would be felt more heavily on the supra-linear functions.
+:mega: Parameter suggestion: the direct multiplication functions seem to lead to a more flexible design where speed and uptime performance can be set to have bigger impact on the final rewards. In addition, sublinear or linear functions on bandwidth seem to be more desirable since they signal to the network a preference towards a low-concentration of resources and rewards. In the end, we want a rich network of many participants, coming together to share the load.
 :::
 
 ### Incentivizing honesty
@@ -345,18 +349,165 @@ Another consideration is that the penalty needs to be bigger than 1 (i.e. needs 
 
 A possible solution is to introduce some delay to rewards. When a node submits logs, a reward is computed and stored for some time. If, in the meantime, that nodes gets assigned a penalty, it will be deducted from the stored rewards. Finally, the rewards that "vest" at each day will be sent to the node, minus the penalties applied. Therefore, at each point in time, all nodes have money "at stake" that can be slashed to cover for penalties.
 
-:::info
-:hammer: Final suggestion: 5 times the average reward per payout seems a good compromise between a low enough false positive rate (2%) and a reasonable true positive rate (20%).
+:::warning
+:mega: Parameter suggestion: a penalty between 4 and 10 times the average reward per payout seems a good compromise between a low enough false positive rate (1%), a reasonable true positive rate (25%), and high enough $\tau$ (90%).
 :::
+
+### Full simulation (setting the final parameters)
+
+There are three main questions we want to answer with this final simulation, namely:
+
+1. Given a new pool of funds to distribute in Saturn, how should the pool be distributed through time? In particular, we test two options - a constant pool and a growth pool (more details will follow in the dedicated subsection)
+2. What should be the final scoring function? Assuming that we use a direct multiplication function, what should be the exponent for bandwidth and the exponent for speed performance and uptime?
+3. What should be the final penalty multiplier and does it work as intended?
+
+We will analyze each question in its dedicated subsection. However, the results were taken from a simulation that used some common assumptions:
+
+* Simulation time: 6 months
+* Payout frequency: Once per day
+* Initial reward pool investment: 600k dollars for the 6 months (or 120k FIL at the current $5 price)
+* Initial set of operators: 50
+* New operators' inflow (i.e. new operators entering the network): 5 per day
+* Operator types:
+    * Honest high-performing L1 operator (10% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 1.2 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 100%
+      * Uptime is 100%
+      * Probability of being flagged by the log detection module of 1% (False positive rate)
+    * Honest average L1 operator (75% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 0.9 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 90%
+      * Uptime is 100%
+      * Probability of being flagged by the log detection module of 1% (False positive rate)
+    * Honest low-performing L1 operator (10% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 0.6 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 50%
+      * Uptime is 90%
+      * Probability of being flagged by the log detection module of 1% (False positive rate)
+    * Cheating L1 operator (5% of all operators):
+      * Bandwidth per day follows a normal distribution with a mean of 1.2 TB and a standard deviation of 0.1 TB
+      * Speed ratio is 100%
+      * Uptime is 100%
+      * Probability of being flagged by the log detection module of 25% (True positive rate)
+
+#### Reward pool
+
+In terms of the reward pool, we tested two different strategies. The first is the *constant reward pool*, which is the simplest and most obvious way of splitting a pool of rewards through time. In particular, we picked the total pool (i.e. 120k FIL) and we divided it by the number of days we expected the pool to subside the network ($30 \times 6$ months $= 180$ days), which results in constant daily pool of 667 FIL.
+
+The second strategy is the *growth reward pool*, which aims to distribute rewards based on the network's growth. The idea is to have a baseline of network growth at each point in time (in this case, the total bandwidth delivered) and to increase the available pool of rewards as the network achieves the defined baseline.
+
+More concretely, given the following variables:
+
+* $B_t$: the actual cumulative bandwidth provided by the network from launch to the payout time $t$
+* $\tilde{B}_t$: the baseline cumulative bandwidth set as goal for the network to deliver between launch and the payout time $t$
+* $R$: total reward pool in FIL
+* $n$: total number of payouts for the reward pool $R$
+
+we define the available reward pool for payout time $t$ as the difference between the cumulative rewards at payout $t$ and payout $t-1$:
+
+$r_t = R_t - R_{t-1}$
+
+and we define the cumulative rewards at payout $t$ based on the share of bandwidth delivered by the network:
+
+$R_t = R \cdot \frac{\min(B_t, \tilde{B}_t) }{\tilde{B}_n}$
+
+Note that the baseline function $\tilde{B}_t$ can have any formula desired. However, for the purpose of the simulation we aimed to have a linear growth in bandwidth for the network. The formula used is the following (assuming bandwidth is measured in TB):
+
+$\tilde{B}_t = 50 \cdot t + 2.5 \cdot t \cdot (t + 1)$
+
+Now that we defined the two strategies, let's see the results obtained in terms of capital deployment. The next plots show the total rewards being paid each day (which corresponds to the simulation's payout frequency).
+
+| Constant reward pool                          |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/Sk1vw6c7i.png) |
+
+| Growth reward pool                            |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/rJF_vpc7i.png) |
+
+ As expected, the constant reward pool is fairly stable, paying a constant amount of FIL every day, as designed. The random variations around this trend come from the normal variation on the operators being detected by the log detection system.
+
+ On the other hand, the growth reward pool has a linear growth trend in terms to total daily rewards paid. This is in line with the simulated behavior of operators, where each day there is a new inflow of operators and, as a consequence, an observed growth in total bandwidth served.
+ 
+In both cases, daily deployed capital takes some days to reach its stable trend. This is caused by the withholding of rewards to build the collateral balance of new operators.
+
+It is also important to note that the scoring functions don't seem to have a meaningful impact on daily deployed capital, while the penalty multipliers do have an impact. This is expected since higher penalty multipliers lead to higher overall penalties and, thus, lower aggregate rewards.
+
+ The next two plots show the daily reward paid on average to a single operator (split by type of operator).
+
+| Constant reward pool                          |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/SkbCw6cXi.png) |
+
+| Growth reward pool                            |
+| --------------------------------------------- |
+| ![](https://hackmd.io/_uploads/rJ7gda97i.png) |
+
+Now we can clearly see the advantage of the growth reward pool over the constant reward pool - as the network growth and new operators join, the constant reward pool leads to a negative-sum game where participants get smaller rewards. This leads to a bad incentive where operators are directly disadvantaged by having new operators join the network. 
+
+On the other hand, the growth pool does not suffer from this decay in rewards, with the average reward paid to each operator remaining fairly constant after the first days of the network's launch. For this reason, we propose the use of the growth reward pool mechanism over the constant reward pool. Thus, for the remaining analysis, we will focus on the results obtained using this strategy.
 
 :::warning
-:warning: We still need to check whether the payout frequency impacts the long-term aggregated penalties
+:mega: Parameter suggestion: use a growth reward pool strategy where the total rewards being distributed in a given payout window depends on the total bandwidth served by the network during the window.
 :::
 
-### Full simulation (with sample data)
+We should note that if the network grows at a faster rate than the baseline, then we will experience a decrease in average rewards per operator since the total daily reward is always capped by the baseline. In other words, if more people join the network than what is set by the baseline, those additional operators above the baseline will dilute the total rewards and decrease the average reward for each operator. Because of this **we need to take great care in designing the baseline function $\tilde{B}_t$**.
 
 :::info
-:hammer: WIP
+:hammer: What should be the baseline function $\tilde{B}_t$?
+:::
+
+#### Scoring function
+
+In terms of the scoring functions we use a direct multiplication function with one exponent for bandwidth ($k_1$) and one exponent for uptime and speed performance ratio ($k_2$). We ran one simulation for each combination of exponents, with both $k_1$ and $k_2$ taking three possible values: 0.5, 1 and 2. Concretely, if $b_i$ is the total bandwidth operator $i$ served at given payout window and $s_i$ and $u_i$ are the operator's speed performance ratio and uptime, respectively, we define the scoring function for that operator as:
+
+$S_i= \frac{b_i^{k_1} \cdot s_i^{k_2} \cdot u_i^{k_2}}{\sum_{j=1}^n b_j^{k_1} \cdot s_j^{k_2} \cdot u_j^{k_2}}$
+
+With this design, the exponent $k_1$ controls how much we reward over-performance on bandwidth. In other words, a lower $k_1$ will distribute rewards more evenly in regard to the bandwidth served, while a high $k_1$ will overcompensate operators serving more bandwidth than the "average" operator.
+
+As for the $k_2$ exponent, it controls how severely underperformance in either uptime of download speed is penalized. A high $k_2$ exponent leads to large drops of reward when uptime or the speed performance ratio fall below 100%.  On the other hand, a low $k_2$ exponent will make those drops smoother and the rewards in case of underperformance slightly higher.
+
+To understand how the different exponents impact rewards, we focus the analysis on the simulations run with a growth reward pool and a penalty multiplier of 5x average rewards. Note that these two design choices are studied on the remaining subsections.
+
+The next plot shows the distribution of the daily payout to operators. We can see the distribution for each operator type and for each combination of $k_1$ and $k_2$.
+
+![](https://hackmd.io/_uploads/HyRf4xiXs.png)
+
+The first observation is that some payouts are zero. This happens in days when the operators are accumulating the balance required to cover future penalties.
+
+Secondly, as expected, performance has a significant impact on the payout to operators, with high performing operators getting higher rewards, followed by the normal operators, which are followed by the low performing operators. In addition, the exponents of the scoring function has a meaningful effect on how different are the payouts between the three operator types.
+
+For most exponent combinations, the normal operators do not experience a relevant impact on their payouts. In fact, the payout seems to be mostly flowing between the low performers and the high performers (which make only 20% of all operators). The exception is with $k_1 = 2$, where even the normal operator see their rewards reduce slightly to accommodate the higher rewards being given to the high-performers.
+
+In the next plot, we show a scatter-plot of the total payout given to each operator against the total bandwidth served by that operator. Here, each dot is a single operator, and the data is split by scoring function and by operator type:
+
+![](https://hackmd.io/_uploads/S1O-rgjXo.png)
+
+Here we can see more clearly the impact that the various exponents have on the relationship between committed bandwidth and rewards. For instance, if we fix $k_2$ (i.e. look at the plot column-wise), we can see that the smaller the bandwidth exponent $k_1$ is, the more we reward longevity. This means that, in the long run, when $k_1$ is low, operators that are in the network for longer are more rewarded for the same amount of bandwidth contributed. Diversely, when $k_1$ is high, high-performers get larger rewards for the same amount of bandwidth contributed. Now, if we fix $k_1$ (i.e. look at the plot row-wise), we observe a similar trend, where increasing the exponent $k_2$ leads to an increasing gap between the 3 types of operators. However, the effect is not as considerable the impact of increasing the bandwidth exponent $k_1$.
+
+:::warning
+:mega: Parameter suggestion: scoring function is a direct multiplication of bandwidth, uptime and speed performance ratio. The exponent for the bandwidth is $k_1 = 0.5$ and the exponent for uptime and speed performance ratio is $k_2=2$. The choice of exponents comes from the desire to distribute rewards more evenly among operators, while penalizing in a meaningful way the operators that not achieving a good uptime and download speed performance. In other words, we want to see a network that shares the load in terms of bandwidth, while maintaining high performance standards.
+:::
+
+#### Penalty multiplier
+
+From the bounds' analysis done in a previous section, we got an acceptable range for the penalty multiplier. Given the range (from 5x to 10x), we picked the values 5x and 7x to include in the analysis.
+
+The following plot shows the distribution of the penalty ratio for each operator type and for each penalty multiplier. Note that this ratio is defined as the total penalties received by an operator divided by the total rewards before penalties (which corresponds to the $1-\tau$).
+
+![](https://hackmd.io/_uploads/HJOnbC57j.png)
+
+The first takeaway is that even with a false positive rate of 1%, honest operators still experience penalties, which is expected. For the majority of honest nodes, when the multiplier is 5x, their penalties are lower than 20% of the rewards before penalties. With a multiplier of 7x, this ratio increases to 30%. In both cases, the median ratio is bellow 10%, which is the value set by upper bound assumption.
+
+Now, looking at the cheating operators, a big majority have a penalty ratio of 1, which is positive. However, there are still some operators that manage to extract value from the network. In this case, the penalty multiplier has a significant impact on the value cheating operators are able to extract from the network (assuming that the scoring exponents are $k_1=0.5$ and $k_2=2$):
+
+* With a multiplier of 5x, these operators can collectively extract between 223 FIL during the 6 months. This is an average of 4.5 FIL per operator.
+* With a multiplier of 7x, these operators can collectively extract between 134 FIL during the 6 months. This is an average of 2.3 FIL per operator. 
+
+What about the percentage of operators that manage to get at least one payout? With a multiplier of 5x, 46% of the cheating operators get at least one payout. This percentage is reduced to 21% when the multiplier is 7x.
+
+:::warning
+:mega: Parameter suggestion: use a penalty multiplier of 5x. Even though a higher multiplier has a significant impact on the percentage of cheaters that are able to extract value from the network (46% to 21%), the overall value extracted does not seem to be higher enough to justify the impact experienced by honest nodes (who get a slash in their rewards of 30% instead of 20%).
 :::
 
 ## References
