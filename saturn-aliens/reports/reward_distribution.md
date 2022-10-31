@@ -365,7 +365,7 @@ We will analyze each question in its dedicated subsection. However, the results 
 
 * Simulation time: 6 months
 * Payout frequency: Once per day
-* Initial reward pool investment: 600k dollars for the 6 months (or 120k FIL at the current $5 price)
+* Initial reward pool investment: 600k dollars for the 6 months (or 120k FIL at the current $5 price). Note that this will likely not be the final available pot of FIL available and is solely an assumption for the sake of the simulation.
 * Initial set of operators: 50
 * New operators' inflow (i.e. new operators entering the network): 5 per day
 * Operator types:
