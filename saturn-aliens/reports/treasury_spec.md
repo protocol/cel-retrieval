@@ -131,7 +131,7 @@ There are two ways one can go about setting these thresholds:
 
 In the end, we use a mixture of the two strategies.
 
-More details about the heuristics and the log detection module in general, can be found in a [dedicated report](https://hackmd.io/@cryptoecon/SJIJEUJbs/%2FWihFXzN9QteSwIxHW5zKeQ).
+More details about the heuristics and the log detection module in general, can be found in a [dedicated report](/WihFXzN9QteSwIxHW5zKeQ).
 
 ## Reward calculator 
 
@@ -143,7 +143,7 @@ The reward calculator is the module responsible to computing the payouts to node
 4. Incent honesty → Operators should be incentivized to report their own faults and be truthful about their own logs
 5. Preference towards free market → we try to leverage free market mechanics and supply-demand to avoid having to set a price for content delivery. Because we don't know the real costs Saturn nodes will incur when running Saturn, we need to allow for some price discovery. Price setting on new services is a hard problem and letting the market decide on the market is a good design for when we have price uncertainty. 
 
-More details about the final reward distribution functions and their impact on rewards can be found in a [dedicated report](https://hackmd.io/@cryptoecon/SJIJEUJbs/%2FMqxcRhVdSi2txAKW7pCh5Q).
+More details about the final reward distribution functions and their impact on rewards can be found in a [dedicated report](/MqxcRhVdSi2txAKW7pCh5Q).
 
 ## Annex
 
