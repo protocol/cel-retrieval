@@ -150,10 +150,8 @@ If the operator wishes to rejoin, they will have to go thought the onboarding pr
 
 1. Saturn sends a notification to the operator warning that the commitment period has ended.
 2. Operator decides whether they wish to renew or terminate:
-   1. If the operator wishes to terminate:
-      - They can withdraw the funds without penalties.
-    2. If the operator wishes to renew:
-      - They can update their time commitment - if nothing is stated here, we assume the same period
+   - If the operator wishes to terminate, they can withdraw the funds without penalties.
+   - If the operator wishes to renew, they can update their time commitment. If nothing is stated, we assume the same period.
 3. After a predefined time (TBD), Saturn will check collateral:
    - If the collateral is changed, Saturn will stop sending requests and no more rewards will be paid.
    - If the collateral is unchanged, Saturn will continue to send request to the operator and distributing rewards
