@@ -49,7 +49,7 @@ When an operator wishes to join Saturn, they will have to go through the followi
 2. Saturn estimates their expected earnings based on the current network performance, reward pool, and the operators' stated performance metrics.
 3. Saturn uses the expected earnings to provide the collateral amount for the operator.
 4. Operator sends the collateral amount to Saturn.
-5. Saturn starts sending retrieval requests to the operator.
+5. Saturn checks when the collateral is sent. Once the collateral is confirmed, Saturn starts sending retrieval requests to the operator.
 
 Note that we are asking the operators to state their own performance metrics, which means we are trusting their "word" in order to compute collateral. This may seem to be lead to a phenomenon where nodes state the minimum requirements in order to pay less collateral. However, this is a double-edged sword because we can always compare the reported metrics with the actual services being delivered. If an operator reports a 10Gbps upload speed, we can flag the operator when they suddenly serve 12 Gbps. On the other hand, if an operator overpromises, they will have to pay a higher collateral while seeing their rewards adjust to actual performance delivered.
 
@@ -113,6 +113,50 @@ More concretely, every time an operator reaches the end of commitment period, th
 Note that, unless the collateral requirement changes, the default outcome (i.e. if the operator does nothing) will be a renewal for the same period of commitment. This is an important point as it implies the collateral amount should be biased to avoid changes. 
 
 Another consideration is how much time we give operators to decide and execute on the terminations/renewals. If we give too little time, operators won't be able to make a decision and will fall under the default option (which can be either a renewal or a termination). If it too much time, then we allow operators that are exiting the network to extract additional rewards without updating their collateral.
+
+### The minimalist collateral
+
+The processes described above aim to meet the full scope laid out in the motivation section. However, this design may not be fully compatible on the centralized nature of the current implementation of the Treasury.
+
+In particular, if we slash operator's funds based on misbehavior, we need to be able to clearly state the conditions under which we consider that there was a misbehavior and the conditions need to be verifiable. This is not currently possible with the current design, where we use a centralized fraud detection system to flag operators.
+
+Having this in mind, in this section we detail a simplified collateral mechanism that focus on solving a smaller scope, while only slashing behaviors that can be verified. With this simpler mechanism, we target the following goals:
+
+* Increase the cost of takeover attacks where a single operator floods the network with a huge number of nodes feeding from the same hardware resources.
+* Increase the commitment of node operators to the Saturn network. 
+
+The main difference is that now collateral is only securing the time commitment of the operator. In other words, the collateral is only slashed if the operator decides to leave the network before the commitment is finished. This means that we can apply the same collateral to all operators as slashing is independent of the operators earnings.
+
+Note that the way penalties due to flags from the fraud detection system remain unchanged in this design. 
+
+Next we will detail the mechanism for onboarding, slashing and termination/renewal.
+
+**Onboarding**
+
+1. Operator states their time commitment (with a certain minimum, to be defined).
+2. Operator sends the collateral amount to Saturn. The amount is fixed and does not depend on the expected earnings of the operator.
+3. Saturn checks when the collateral is sent. Once the collateral is confirmed, Saturn starts sending retrieval requests to the operator.
+
+**Slashing**
+
+1. Operator decides to leave the network earlier and makes a request to withdraw collateral
+2. Saturn processes the request:
+   1. Saturn stops sending requests to the operator
+   2. Saturn applies a pre-defined penalty and sends the remaining of the collateral back to the operator
+
+If the operator wishes to rejoin, they will have to go thought the onboarding process again.
+
+**Renewal and termination**
+
+1. Saturn sends a notification to the operator warning that the commitment period has ended.
+2. Operator decides whether they wish to renew or terminate:
+   1. If the operator wishes to terminate:
+      - They can withdraw the funds without penalties.
+    2. If the operator wishes to renew:
+      - They can update their time commitment - if nothing is stated here, we assume the same period
+3. After a predefined time (TBD), Saturn will check collateral:
+   - If the collateral is changed, Saturn will stop sending requests and no more rewards will be paid.
+   - If the collateral is unchanged, Saturn will continue to send request to the operator and distributing rewards
 
 ## Collateral amount
 
