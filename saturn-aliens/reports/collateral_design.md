@@ -158,7 +158,59 @@ If the operator wishes to rejoin, they will have to go thought the onboarding pr
 
 ## Collateral amount
 
+### The minimalist design
+
+In the minimalist design, collateral is protecting the network against churn and takeover attacks. We will start by analyzing the first goal and then discuss the second.
+
+For churn, the economic argument is quite straightforward - at any point in time, the amount at risk (i.e. the collateral amount liable to be slashed) needs to be larger than the costs of continuing to run the L1 node operation. If the amount was smaller, the cost of leaving the network would be smaller than the cost of continuing on the network. 
+
+Previous analysis has indicated that the monthly costs of running a L1 node varies between 1000 USD and 3000 USD. If we assume a linear distribution of these costs throughout the month, if we pick the most pessimist costs (3000 USD), and if we take the price of FIL as 5 USD, we get the following formula for the minimum collateral in FIL:
+
+$C(d) = \frac{600d}{30}$
+
+where $d$ is the number of days until the end of the time-commitment. For instance, if there are 15 days missing to the time commitment, the liable amount needs to be at least $\frac{600 \cdot 15}{30} = 300 \text{ FIL}$. 
+
+If we consider that continuing the operator will mean receiving rewards, then operators will always be incentivized to remain operations until the end of the time commitment.
+
+With this argument, we get two things at the same time:
+
+1. The collateral value that a new operator needs to provide. It is the same formula, with $d$ now being the number of days the operator is committing to the network.
+2. The amount to be slashed if an operator decides to leave earlier.
+
+The second goal of the minimalist design is to make takeover attackers harder. To assess how effective the proposed formula is, we compute the cost of a takeover attack given the following assumptions:
+
+1. The minimum collateral to join the network is 600 FIL (or 3000 USD). This assumes that the minimum time commitment is one month and that we are using the collateral formula described previously.
+2. The number of legitimate nodes in the Saturn network varies between 150 and 500.
+3. The attacker aims to control 1% of the network. (why such a low number? Because requests are routed based on regions and there will always be some regions with fewer nodes)
+4. The attacker joins the network with a given number of new nodes, pays the collateral, and severely impacts user experience by performing poorly. Out system would detect such attacker fairly quickly and the attacker is kicked out of the network without receiving their collateral back. Thus, they loose the entire collateral posted.
+
+```vega
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Plots two functions using a generated sequence.",
+  "title": "Takeover collateral costs by network size",
+  "width": 350,
+  "height": 200,
+  "data": {"sequence": {"start": 150, "stop": 510, "step": 10, "as": "size"}},
+  "transform": [{"calculate": "0.01*datum.size*600", "as": "cost"}],
+  "mark": "line",
+  "encoding": {
+    "x": {"field": "size", "type": "quantitative", "title": "Network size"},
+    "y": {"field": "cost", "type": "quantitative", "title": "Takeover cost (FIL)"}
+  }
+}
+```
+
+We can see from the plot that, with a network size of 150 nodes (which is the size of the network during the first month after launch), this design leads to a takeover cost of less than 1000 FIL (5000 USD), which is fairly low if we consider the potential value of the Saturn network. In addition, if we consider that a single node may be able to impact performance in less popular countries (which would lead to a takeover cost of only 600 FIL), we conclude that **collateral is not a very strong protection against these attacks** while the network size remains small. This highlights the fact that we need early detection system in place since we cannot fully rely on economic arguments.
+
+If the network triples in size, the takeover cost increases to 3000 FIL (or 15k USD). This is a more respectable costs, but still very low when we consider takeover costs of other decentralized network such as Ethereum or Filecoin.
+
+:::warning
+:warning: The minimalist collateral design can be effective at reducing node operator churn. However, its efficacy at preventing takeover attacks is small, which results in the need to have additional protection besides collateral.
+:::
+
+### The full-fledged design
+
 :::info
 :hammer: WIP
 :::
-
