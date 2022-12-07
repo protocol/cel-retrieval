@@ -194,6 +194,33 @@ On the other hand, the direct multiplication incents a more balanced performance
 
 It is not clear the best approach here and this is yet another feature we will test with the simulation. However, unless there is a strong argument in favor of the direct multiplication approach, the **interpretability and flexibility of the linear combination approach make it the better option**.
 
+### Adjustment after penalties
+
+Let's start this subsection with an example. Suppose a new operator joins Saturn and begins to try to game the system by doing a huge number of fake requests to its own node. After the first two days, the fraud detection system flags this operator and applies a penalty. This means that the rewards that were originally assigned to this fraudulent node operator will not be paid. 
+
+Now, let's think about what happens to the remaining operators in this example. Even though it was faked, they were "contributing" bandwidth to the network. The traffic logged by the fraudulent operator is considered when compute the rewards for the entire network and, as such, some part of rewards are "assigned" to this operator. This means that during the time the fraudulent operator is adding their logs, the total rewards assigned to the rest of the operators will be lower than a case where that operator never joins the network. This issue can be further worsened if the amount of fake traffic being logged is a significant proportion of the total traffic in the network. 
+
+Thus, we reach a possible attack vector where a fraudulent node is able to reduce the rewards of the remaining operators by simply joining and adding logs with fake traffic. That operator would not take any rewards for themselves, but would be able to reduce the value given to the remaining operators, which is worrisome. Thus, to avoid this, when a node operator is flagged and exhibits a strange high bandwidth served, we need to adjust the rewards of the remaining operators to avoid reducing too much their own rewards.
+
+We have few options to achieve this. When calculating the reward share for a given time period, we will have the aggregated performance metrics for all node operators. There are three things we can do to the aggregated data to adjust rewards after an operator is flagged:
+
+1. Exclude the row of the flagged operator entirely.
+   - Benefits: Works for operators without previous data and reduces the amount of rewards that are not distributed due to penalties
+   - Disadvantages: Operators are rewarded when honest nodes are flagged.
+2. Replace the row of the flagged operators with the historical average of that operator.
+   - Benefits: Mitigates rewarding operators when honest nodes are flagged.
+   - Disadvantages: does not work for operators without previous data.
+3. Replace the row of the flagged operators with the network average for that time period.
+   - Benefits: Works for operators without previous data and mitigates rewarding operators when honest nodes are flagged.
+   - Disadvantages: Operators will receive fewer rewards when small nodes are flagged.
+
+The second option is automatically excluded because it cannot be used for nodes without a good history of services. That leaves us with options 1 or 3. Option 1 is better for capital allocation, since it will lead to a higher share of rewards being distributed among the operators that are not flagged. On the other hand, option 3 avoids the lopsided incentives where the network is rewarded when honest nodes are flagged. However, since operator have no control over the fraud detection system, we feel that the simplicity of the option 1 design and the fact that leads to a higher capital distribution supplants the issues that may come when honest nodes are flagged.
+
+
+:::warning
+:warning: we propose exclude the row of the flagged operator entirely since it is the option that leads to the higher capital distribution.
+:::
+
 ### L2s payouts
 
 In the first section, we described how L1 and L2 nodes are expected to interact within Saturn. Running a L1 node is a more demanding operation than running a L2 node, both in terms of hardware requirements and service expectation. They are the ones serving requests directly to end-users and processing all the requests coming to Saturn. On the other hand, L2 nodes form swarms around single L1 nodes and serve as an extension of their cache. They are home machines, with low hardware requirements, that can go offline as they please.
