@@ -214,7 +214,7 @@ We have few options to achieve this. When calculating the reward share for a giv
    - Benefits: Works for operators without previous data and mitigates rewarding operators when honest nodes are flagged.
    - Disadvantages: Operators will receive fewer rewards when small nodes are flagged.
 
-The second option is automatically excluded because it cannot be used for nodes without a good history of services. That leaves us with options 1 or 3. Option 1 is better for capital allocation, since it will lead to a higher share of rewards being distributed among the operators that are not flagged. On the other hand, option 3 avoids the lopsided incentives where the network is rewarded when honest nodes are flagged. However, since operator have no control over the fraud detection system, we feel that the simplicity of the option 1 design and the fact that leads to a higher capital distribution supplants the issues that may come when honest nodes are flagged.
+The second option is automatically excluded because it cannot be used for nodes without a good history of services. That leaves us with options 1 or 3. Option 1 is better for capital allocation, since it will lead to a higher share of rewards being distributed among the operators that are not flagged. On the other hand, option 3 avoids the lopsided incentives where the network is rewarded when honest nodes are flagged. However, since operators have no control over the fraud detection system, we feel that the simplicity of the option 1 design and the fact that leads to a higher capital distribution supplants the issues that may come when honest nodes are flagged.
 
 
 :::warning
